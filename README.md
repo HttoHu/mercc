@@ -1,2 +1,2 @@
-# mercc
- A simplied-C interpreter based on merdog
+# Mercc
+* By Htto 2020
