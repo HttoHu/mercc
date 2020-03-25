@@ -82,7 +82,7 @@ namespace Mer
 		}
 		tsymbol_table->end_block();
 		token_stream.match(END);
-
+		token_stream.match(SEMI);
 	}
 
 

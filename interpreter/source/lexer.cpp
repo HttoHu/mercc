@@ -42,10 +42,10 @@ TokenMap	Mer::BasicToken{
 	{ "false",new Token(TFALSE) },
 	{ "string",new Token(STRING_DECL) },{ "bool",new Token(BOOL_DECL) },
 	{ "ref",new Token(REF) },{ "begin",new Token(BEGIN) },
-	{ "end",new Token(END) },{ "real",new Token(REAL_DECL) },{ "void",new Token(VOID_DECL) },{"char",new Token(CHAR_DECL)},
+	{ "end",new Token(END) },{ "double",new Token(REAL_DECL) },{ "void",new Token(VOID_DECL) },{"char",new Token(CHAR_DECL)},
 	{ "int",new Token(INTEGER_DECL) },{ "program",new Token(PROGRAM) },{"nullptr",new Token(NULLPTR)}
 };
-bool				is_function_args = false;
+bool is_function_args = false;
 
 std::map<char, char> escape_character_table = {
 	{'r','\r'},{'n','\n'},{'b','\b'},{'t','\t'},{'a','\a'},{'0','\0'},{'\'','\''},{'\"','\"'}
