@@ -16,14 +16,21 @@ namespace Mer
 	// the postion of the instruction
 	extern std::vector<size_t*> _pcs;
 	Mem::Object function_ret = nullptr;
+	// as we all known we can code if(expr){...} or if(expr) ...(single statement).
+
 	namespace Parser
 	{
+
 		void switch_driver();
 		void build_for();
-		void public_part()
+		void public_part(bool parse_once=false)
 		{
+			int cnt = 0;
 			while (token_stream.this_tag() != END)
 			{
+				if(parse_once && cnt)
+					return;
+				cnt++;
 				switch (token_stream.this_tag())
 				{
 				case IF:
@@ -57,9 +64,22 @@ namespace Mer
 					do_while();
 					break;
 				default:
-					current_ins_table->push_back(std::unique_ptr<ParserNode>(statement()));
+					auto stmt = statement();
+					if (stmt)
+						current_ins_table->push_back(std::unique_ptr<ParserNode>(stmt));
 					break;
 				}
+			} 
+		}
+		void _parse_block_or_single_statement() {
+			if (token_stream.this_tag() != BEGIN)
+				public_part(true);
+			else
+			{
+				token_stream.match(BEGIN);
+				public_part();
+				// end_block;
+				token_stream.match(END);
 			}
 		}
 		void build_block()
@@ -123,11 +143,9 @@ namespace Mer
 			// new block
 			mem.new_block();
 			this_namespace->sl_table->new_block();
-			token_stream.match(BEGIN);
 			current_ins_table->push_back(std::make_unique<IfTrueToAOrB>(_pcs.back(), std::make_shared<size_t>(*start_pos + 1), end_pos, node));
-			public_part();
+			_parse_block_or_single_statement();
 			current_ins_table->push_back(std::make_unique<Goto>(_pcs.back(), start_pos));
-			token_stream.match(END);
 			*end_pos = current_ins_table->size();
 			// end_block, block;
 			end_loop();
@@ -146,15 +164,12 @@ namespace Mer
 			mem.new_block();
 			this_namespace->sl_table->new_block();
 
-			token_stream.match(BEGIN);
 			auto iwjt = new IfWithJmpTable(_pcs.back());
 			iwjt->end_pos = end_pos;
 			current_ins_table->push_back(std::unique_ptr<IfWithJmpTable>(iwjt));
 			iwjt->jmp_table.push_back({ std::move(node),std::make_shared<size_t>(current_ins_table->size()) });
-			public_part();
+			_parse_block_or_single_statement();
 			current_ins_table->push_back(std::make_unique<Goto>(_pcs.back(), end_pos));
-			// end_block;
-			token_stream.match(END);
 			mem.end_block();
 			this_namespace->sl_table->end_block();
 
@@ -166,10 +181,8 @@ namespace Mer
 				token_stream.match(RPAREN);
 				mem.new_block();
 				this_namespace->sl_table->new_block();
-				token_stream.match(BEGIN);
 				iwjt->jmp_table.push_back({ std::unique_ptr<ParserNode>(expr),std::make_shared<size_t>(current_ins_table->size()) });
-				public_part();
-				token_stream.match(END);
+				_parse_block_or_single_statement();
 				current_ins_table->push_back(std::make_unique<Goto>(_pcs.back(), end_pos));
 				mem.end_block();
 				this_namespace->sl_table->end_block();
@@ -181,9 +194,7 @@ namespace Mer
 				token_stream.match(ELSE);
 				mem.new_block();
 				this_namespace->sl_table->new_block();
-				token_stream.match(BEGIN);
-				public_part();
-				token_stream.match(END);
+				_parse_block_or_single_statement();
 				mem.end_block();
 				this_namespace->sl_table->end_block();
 			}
@@ -349,12 +360,9 @@ namespace Mer
 			}
 			token_stream.match(RPAREN);
 
-			token_stream.match(BEGIN);
-
 			current_ins_table->push_back(std::make_unique <IfTrueToAOrB>(_pcs.back(), std::make_shared<size_t>(current_ins_table->size() + 1), end_pos, compare_part));
-			public_part();
+			_parse_block_or_single_statement();
 			current_ins_table->push_back(std::make_unique <Goto>(_pcs.back(), start_pos));
-			token_stream.match(END);
 			*end_pos = current_ins_table->size();
 			// end_block, block;
 			end_loop();

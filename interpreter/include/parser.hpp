@@ -167,7 +167,7 @@ namespace Mer
 		std::pair<std::vector<size_t> ,std::vector<ParserNode*>> linearized_array();
 		// DFS 
 		ArrayInitList* build_array_initlist_tree();
-		std::unique_ptr<Program> program();
+		void program();
 		ParserNode* statement();
 		ParserNode* var_decl();
 		type_code_index get_type();

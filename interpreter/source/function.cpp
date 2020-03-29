@@ -144,25 +144,18 @@ std::pair<std::string, Function*> Parser::_build_function()
 	return { name,ret };
 }
 
-void Mer::Parser::build_function()
+void Mer::Parser::build_function(size_t rtype,std::string name)
 {
-	token_stream.match(FUNCTION);
-	type_code_index rtype = Mem::get_type_code();
-	// if the ret type is a pointer
-	if (token_stream.this_tag() == MUL)
-	{
-		token_stream.next();
-		rtype++;
-	}
+	
 	current_function_rety = rtype;
 	this_namespace->sl_table->new_block();
-	std::string name = Id::get_value(token_stream.this_token());
-	token_stream.next();
 	mem.new_block();
 	auto param = build_param();
 	auto param_feature = param->get_param_feature();
 	if (token_stream.this_tag() == SEMI)
 	{
+		if (name == "main")
+			throw Error("main function should not be declared!");
 		mem.end_block();
 		Function* ret = new Function(rtype,param);
 		token_stream.match(SEMI);
@@ -182,6 +175,7 @@ void Mer::Parser::build_function()
 			func_recorder = static_cast<FuncIdRecorder*>(finder);
 
 		auto func = func_recorder->find(param_feature);
+		// if the function has been declared.
 		if (func != nullptr&&func->is_completed==false)
 		{
 			// create a function and return it.
@@ -204,6 +198,12 @@ void Mer::Parser::build_function()
 	}
 	// create a function and return it.
 	Function* ret = new Function(rtype, param);
+	if (name == "main")
+	{
+		if (rtype != Mem::INT)
+			throw Error("main should return int");
+		pre_stmt.push_back(UptrPNode(new FunctionCall(ret, {})));
+	}
 	// set function 
 	this_namespace->set_new_func(name, ret);
 	Mer::global_stmt() = false;

@@ -79,7 +79,7 @@ int main()
 	try
 	{
 		time_t s = clock();
-		std::string input_content = get_file_content("test.mer");
+		std::string input_content = get_file_content("test.c");
 		Mer::run_interpreter(input_content);
 		time_t e = clock();
 		std::cout << "\ntime:" << (double)(e - s) / CLK_TCK;

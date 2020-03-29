@@ -137,7 +137,7 @@ namespace Mer
 		else
 			throw Error("invalid array init list");
 	}
-	std::unique_ptr<Program> Parser::program()
+	void Parser::program()
 	{
 		int programe_num = 0;
 		global_stmt() = true;
@@ -161,34 +161,14 @@ namespace Mer
 			case STRUCT:
 				build_ustructure();
 				break;
-			case FUNCTION:
-				build_function();
-				break;
-			case PROGRAM:
-			{
-				global_stmt() = false;
-				token_stream.match(PROGRAM);
-				auto tmp = token_stream.this_token();
-				token_stream.match(ID);
-				std::string name = Id::get_value(tmp);
-				ret->identify = tmp;
-				_pcs.push_back(ret->pc);
-				current_ins_table = &(ret->stmts);
-				Parser::build_block();
-				ret->off = mem.function_block_size;
-				mem.reset_func_block_size();
-				_pcs.pop_back();
-				programe_num++;
-				break;
-			}
 			case ENDOF:
-				if (programe_num != 1)
-					throw Error("The program must have a program as an entry");
 				mem.get_current() = mem.get_capacity() - 1;
-				return ret;
+				return;
 			case ID:
 			default:
-				pre_stmt.push_back(UptrPNode(Parser::statement()));
+				auto stmt = Parser::statement();
+				if(stmt)
+					pre_stmt.push_back(UptrPNode(stmt));
 				break;
 			}
 		}
@@ -198,23 +178,45 @@ namespace Mer
 		ParserNode* node = nullptr;
 		switch (token_stream.this_token()->get_tag())
 		{
+		case VOID_DECL:
 		case CHAR_DECL:
 		case BOOL_DECL:
 		case INTEGER_DECL:
 		case REAL_DECL:
 		case STRING_DECL:
 			node = var_decl();
+			if (node == nullptr)
+			{
+				return nullptr;
+			}
 			break;
 		default:
 			node = Expr().root();
 			break;
 		}
+
 		token_stream.match(SEMI);
 		return node;
 	}
 	ParserNode* Parser::var_decl()
 	{
 		type_code_index type = Mem::get_type_code();
+		// if it is a function decl
+		if (global_stmt() && token_stream.this_tag() == ID)
+		{
+			auto id_name = Id::get_value(token_stream.this_token());
+			token_stream.match(ID);
+			// function decl or statement
+			if (token_stream.this_tag() == LPAREN)
+			{
+				build_function(type, id_name);
+				return nullptr;
+			}
+			else
+			{
+				token_stream.back();
+			}
+		}
 		std::vector<VarDeclUnit*> units;
 		units.push_back(new VarDeclUnit(type));
 		while (token_stream.this_tag() != SEMI)

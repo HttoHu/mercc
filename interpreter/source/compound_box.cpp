@@ -241,6 +241,7 @@ namespace Mer
 		}
 		return ret;
 	}
+
 	Mem::Object MemberVar::execute()
 	{
 		return parents_vec.back()->operator[](std::make_shared<Mem::Int>(member_pos));

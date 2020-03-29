@@ -130,7 +130,7 @@ namespace Mer
 		ParamFeature build_param_feature();
 		// build param which contains nameinfo and type_code;
 		Param* build_param();
-		void build_function();
+		void build_function(size_t rtype, std::string name);
 		std::pair<std::string,Function*> _build_function();
 	}
 	// the set of functions which will be deleted when the program exit;
