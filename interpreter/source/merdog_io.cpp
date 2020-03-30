@@ -55,6 +55,15 @@ namespace Mer
 	}
 	namespace
 	{
+		template<typename T>
+		void print_str(const T &str)
+		{
+#ifndef DISABLEIO
+			std::cout << str;
+#else
+			output_buff += str;
+#endif
+		}
 		std::shared_ptr<Mem::Int> _make_int_obj(int n)
 		{
 			return std::make_shared<Mem::Int>(n);
@@ -102,12 +111,47 @@ namespace Mer
 		}
 		Mem::Object _cout(const std::vector<Mem::Object>& args)
 		{
-			for (const auto& a : args)
-#ifndef DISABLEIO
-				std::cout << a->to_string();
-#else
-				output_buff += a->to_string();
-#endif
+			std::string content = args[0]->to_string();
+			int cnt = 1;
+			int i = 0;
+			while (i < content.size())
+			{
+				switch (content[i])
+				{
+				case '%':
+				{
+					i++;
+					if (i == content.size())
+						throw Error("printf first arg error");
+					switch (content[i])
+					{
+					case 'd':
+					{
+						i++;
+						print_str(args[cnt++]->Convert(Mem::INT)->to_string());
+						continue;
+					}
+					case 'f':
+					{
+						i++;
+						print_str(args[cnt++]->Convert(Mem::DOUBLE)->to_string());
+						continue;
+					}
+					case 'c':
+					{
+						i++;
+						print_str(args[cnt++]->Convert(Mem::CHAR)->to_string());
+						continue;
+					}
+					default:
+						break;
+					}
+				}
+				default:
+					print_str(content[i++]);
+					break;
+				}
+			}
 			return nullptr;
 		}
 
@@ -303,7 +347,7 @@ namespace Mer
 		str_init->set_param_types({ Mem::INT,Mem::CHAR });
 		type_init_function_map[InitKey(Mem::STRING, std::vector<type_code_index>{ Mem::INT, Mem::CHAR })] = str_init;
 		//======================================================
-		mstd->set_new_func("cout", cout);
+		root_namespace->set_new_func("printf", cout);
 		_register_internal_function("input_int", Mem::INT, {}, _input_int, mstd);
 		_register_internal_function("input_char", Mem::CHAR, {}, _input_char, mstd);
 		_register_internal_function("input_string", Mem::STRING, {}, _input_string, mstd);

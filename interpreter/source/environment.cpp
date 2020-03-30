@@ -17,7 +17,7 @@
 #include "../include/compound_box.hpp"
 std::map<std::string, void(*)()> Mer::repository{
 	{"vector",Mer::Container::using_vector},{"deque",Mer::Container::using_deque},
-	{"set",Mer::using_set},{"map",Mer::using_map}
+	{"set",Mer::using_set},{"map",Mer::using_map},{"stdio.h",Mer::set_io}
 };
 std::vector<size_t*> Mer::_pcs;
 std::string Mer::output_buff = "";
@@ -94,9 +94,6 @@ namespace Mer
 			compare_map.insert({ Mem::DOUBLE,compare_op });
 			compare_map.insert({ Mem::STRING,compare_op });
 			compare_map.insert({ Mem::CHAR,compare_op });
-			Mer::set_io();
-			Mer::set_maths();
-			Mer::set_utility();
 		}
 	}
 

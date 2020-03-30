@@ -6,45 +6,100 @@
 using namespace Mer;
 using TokenMap = std::map<std::string, Token*>;
 using TagStrMap = std::map<Tag, std::string>;
-//==========================================
-size_t Mer::Endl::current_line = 0;
+namespace Mer {
+	extern std::map<std::string, void(*)()> repository;
+	namespace Preprocessor
+	{
+		std::string retrive_word(const std::string& str, size_t& pos)
+		{
+			std::string ret;
+			while (isalnum(str[pos]) || str[pos] == '_') ret += str[pos++];
+			return ret;
+		}
+		bool match_str(const std::string &content, size_t &i, const std::string & str)
+		{
+			while (content[i] == ' ')
+				i++;
+			for (int j = 0; j < str.size(); j++)
+				if (str[j] != content[i++])
+					throw LexerError("lexer error");
+		}
+		void process_include(const std::string &content, size_t &i)
+		{
+			match_str(content, i, "<");
 
-TagStrMap	Mer::TagStr{
-	{ IMPORT,"IMPORT" },{ NAMESPACE,"NAMESPACE" },{ STRUCT,"struct" },{NEW,"new"},{PTRVISIT,"PTRVISIT"},
-	{ REF,"REF" },{ PROGRAM,"PROGRAME" },{ COMMA,"COMMA" },{ COLON,"COLON" },
-	{ ID,"ID" },{ INTEGER,"INTEGER" },{ REAL,"REAL" } ,{ FUNCTION,"FUNCTION" },{ RETURN,"RETURN" },
-	{ IF,"IF" },{ ELSE_IF,"ELSE_IF" },{ ELSE,"ELSE" },{ WHILE,"WHILE" },{ DO,"DO" } ,{ FOR,"FOR" },{ BREAK,"BREAK" },{ CONTINUE,"CONTINUE" },{SWITCH,"SWITCH"},
-	{ INTEGER_DECL,"INTEGER_DECL" },{ REAL_DECL,"REAL_DECL" },{ STRING_DECL,"STRING_DECL" },{ BOOL_DECL,"BOOL_DECL" },{ VOID_DECL,"VOID_DECL" },{CHAR_DECL,"CHAR_DECL"},
-	{ PLUS,"PLUS" },{ MINUS,"MINUS" },{ MUL,"MUL" },{ DIV,"DIV" },{MAKE,"make"},
-	{ GE,"GE" },{ GT,"GT" },{ LE,"LE" },{ LT,"LT" },{ EQ,"EQ" },{ NE,"NE" },
-	{ AND,"AND" },{ OR,"OR" },{ NOT,"NOT" },{ GET_ADD,"GET_ADD" },
-	{ LPAREN,"LPAREN" },{ RPAREN,"RPAREN" },{ LSB,"LSB" },{ RSB,"RSB" },
-	{ DOT,"DOT" },{ BEGIN,"BEGIN" },{ END,"END" },
-	{ SEMI,"SEMI" },{ ASSIGN,"ASSIGN" },{ SADD,"SADD" },{ CASE,"CASE" },
-	{ ENDL,"ENDL" },{ PRINT,"PRINT" },{ CAST,"CAST" },
-	{ TTRUE,"TTRUE" },{ TFALSE,"TFALSE" },{NULLPTR,"NULLPTR"},{SIZEOF,"SIZEOF"},
-};
-TokenMap	Mer::BasicToken{
-	{"+",new Token(PLUS)},{"-",new Token(MINUS)},{"*",new Token(MUL)},{"/",new Token(DIV)},{"=",new Token(ASSIGN)},
-	{"+=",new Token(SADD)},{"-=",new Token(SSUB)},{"*=",new Token(SMUL)},{"/=",new Token(SDIV)},
-	{"<",new Token(LT)},{"<=",new Token(LE)},{">",new Token(GT)},{">=",new Token(GE)},{"==",new Token(EQ)},
-	{"!=",new Token(NE)},{"!",new Token(NOT)},{"&&",new Token(AND)},{"||",new Token(OR)},{":",new Token(COLON)},
-	{",",new Token(COMMA)},{";",new Token(SEMI)},{".",new Token(DOT)},{"&",new Token(GET_ADD)},{"->",new Token(PTRVISIT)},
-	{"[",new Token(LSB)},{"]",new Token(RSB)},{"(",new Token(LPAREN)},{")",new Token(RPAREN)},
-	{"{",new Token(BEGIN)},{"}",new Token(END)},
-	{ "using",new Token(IMPORT) },{ "namespace",new Token(NAMESPACE) },{ "struct",new Token(STRUCT) },
-	{ "if",new Token(IF) },{ "elif",new Token(ELSE_IF) },{ "else",new Token(ELSE) },{"sizeof",new Token(SIZEOF)},
-	{ "while",new Token(WHILE) },{ "break",new Token(BREAK) },{ "for",new Token(FOR) }, {"do",new Token(DO)},{"switch",new Token(SWITCH)}, {"case",new Token(CASE)},
-	{ "continue",new Token(CONTINUE) },{"default",new Token(DEFAULT)},
-	{ "function",new Token(FUNCTION) },{ "return",new Token(RETURN) },
-	{ "new",new Token(NEW)},{"make",new Token(MAKE)},
-	{ "cast",new Token(CAST) },{ "true",new Token(TTRUE) },
-	{ "false",new Token(TFALSE) },
-	{ "string",new Token(STRING_DECL) },{ "bool",new Token(BOOL_DECL) },
-	{ "ref",new Token(REF) },{ "begin",new Token(BEGIN) },
-	{ "end",new Token(END) },{ "double",new Token(REAL_DECL) },{ "void",new Token(VOID_DECL) },{"char",new Token(CHAR_DECL)},
-	{ "int",new Token(INTEGER_DECL) },{ "program",new Token(PROGRAM) },{"nullptr",new Token(NULLPTR)}
-};
+			std::string name = retrive_word(content, i);
+			if (content[i] == '.')
+			{
+				name += "."; i++;
+				name += retrive_word(content, i);
+			}
+			match_str(content, i, ">");
+			auto result = repository.find(name);
+			if (result == repository.end())
+				throw LexerError("can not open the file " + name);
+			result->second();
+		}
+
+		void preprocessor(const std::string &content, size_t &i)
+		{
+			// skip #
+			i++;
+			std::string ins = retrive_word(content, i);
+			std::map<std::string, void(*)(const std::string &, size_t &)> sub_processor_dic{
+				{ "include",process_include }
+			};
+			auto result = sub_processor_dic.find(ins);
+			if (result == sub_processor_dic.end())
+				throw LexerError("invalid preprocess instruction " + ins);
+			result->second(content, i);
+		}
+		extern std::map<std::string, void(*)()> repository;
+	}
+	size_t Endl::current_line = 0;
+	TagStrMap	TagStr{
+		{ IMPORT,"IMPORT" },{ NAMESPACE,"NAMESPACE" },{ STRUCT,"struct" },{ NEW,"new" },{ PTRVISIT,"PTRVISIT" },
+		{ SHARP,"SHARP" },{ INCLUDE,"INCLUDE" },
+		{ REF,"REF" },{ PROGRAM,"PROGRAME" },{ COMMA,"COMMA" },{ COLON,"COLON" },
+		{ ID,"ID" },{ INTEGER,"INTEGER" },{ REAL,"REAL" } ,{ FUNCTION,"FUNCTION" },{ RETURN,"RETURN" },
+		{ IF,"IF" },{ ELSE_IF,"ELSE_IF" },{ ELSE,"ELSE" },{ WHILE,"WHILE" },{ DO,"DO" } ,{ FOR,"FOR" },{ BREAK,"BREAK" },{ CONTINUE,"CONTINUE" },{ SWITCH,"SWITCH" },
+		{ INTEGER_DECL,"INTEGER_DECL" },{ REAL_DECL,"REAL_DECL" },{ STRING_DECL,"STRING_DECL" },{ BOOL_DECL,"BOOL_DECL" },{ VOID_DECL,"VOID_DECL" },{ CHAR_DECL,"CHAR_DECL" },
+		{ PLUS,"PLUS" },{ MINUS,"MINUS" },{ MUL,"MUL" },{ DIV,"DIV" },{ MAKE,"make" },
+		{ GE,"GE" },{ GT,"GT" },{ LE,"LE" },{ LT,"LT" },{ EQ,"EQ" },{ NE,"NE" },
+		{ AND,"AND" },{ OR,"OR" },{ NOT,"NOT" },{ GET_ADD,"GET_ADD" },
+		{ LPAREN,"LPAREN" },{ RPAREN,"RPAREN" },{ LSB,"LSB" },{ RSB,"RSB" },
+		{ DOT,"DOT" },{ BEGIN,"BEGIN" },{ END,"END" },
+		{ SEMI,"SEMI" },{ ASSIGN,"ASSIGN" },{ SADD,"SADD" },{ CASE,"CASE" },
+		{ ENDL,"ENDL" },{ PRINT,"PRINT" },{ CAST,"CAST" },
+		{ TTRUE,"TTRUE" },{ TFALSE,"TFALSE" },{ NULLPTR,"NULLPTR" },{ SIZEOF,"SIZEOF" },
+	};
+	TokenMap	BasicToken{
+		{ "#",new Token(SHARP) },
+		{ "+",new Token(PLUS) },{ "-",new Token(MINUS) },{ "*",new Token(MUL) },{ "/",new Token(DIV) },{ "=",new Token(ASSIGN) },
+		{ "+=",new Token(SADD) },{ "-=",new Token(SSUB) },{ "*=",new Token(SMUL) },{ "/=",new Token(SDIV) },
+		{ "<",new Token(LT) },{ "<=",new Token(LE) },{ ">",new Token(GT) },{ ">=",new Token(GE) },{ "==",new Token(EQ) },
+		{ "!=",new Token(NE) },{ "!",new Token(NOT) },{ "&&",new Token(AND) },{ "||",new Token(OR) },{ ":",new Token(COLON) },
+		{ ",",new Token(COMMA) },{ ";",new Token(SEMI) },{ ".",new Token(DOT) },{ "&",new Token(GET_ADD) },{ "->",new Token(PTRVISIT) },
+		{ "[",new Token(LSB) },{ "]",new Token(RSB) },{ "(",new Token(LPAREN) },{ ")",new Token(RPAREN) },
+		{ "{",new Token(BEGIN) },{ "}",new Token(END) },
+		{ "include",new Token(INCLUDE) },{ "namespace",new Token(NAMESPACE) },{ "struct",new Token(STRUCT) },
+		{ "if",new Token(IF) },{ "elif",new Token(ELSE_IF) },{ "else",new Token(ELSE) },{ "sizeof",new Token(SIZEOF) },
+		{ "while",new Token(WHILE) },{ "break",new Token(BREAK) },{ "for",new Token(FOR) },{ "do",new Token(DO) },{ "switch",new Token(SWITCH) },{ "case",new Token(CASE) },
+		{ "continue",new Token(CONTINUE) },{ "default",new Token(DEFAULT) },
+		{ "function",new Token(FUNCTION) },{ "return",new Token(RETURN) },
+		{ "new",new Token(NEW) },{ "make",new Token(MAKE) },
+		{ "cast",new Token(CAST) },{ "true",new Token(TTRUE) },
+		{ "false",new Token(TFALSE) },
+		{ "string",new Token(STRING_DECL) },{ "bool",new Token(BOOL_DECL) },
+		{ "ref",new Token(REF) },{ "begin",new Token(BEGIN) },
+		{ "end",new Token(END) },{ "double",new Token(REAL_DECL) },{ "void",new Token(VOID_DECL) },{ "char",new Token(CHAR_DECL) },
+		{ "int",new Token(INTEGER_DECL) },{ "program",new Token(PROGRAM) },{ "nullptr",new Token(NULLPTR) }
+	};
+}
+//==========================================
+
+
+
 bool is_function_args = false;
 
 std::map<char, char> escape_character_table = {
@@ -64,38 +119,7 @@ char _convert_escape(char c)
 Token* Mer::END_TOKEN = new Token(ENDOF);
 TokenStream Mer::token_stream;
 //get a word from content
-std::string retrive_word(const std::string& str, size_t& pos)
-{
-	std::string ret;
-	while (isalnum(str[pos]) || str[pos] == '_') ret += str[pos++];
-	return ret;
-}
 
-void Mer::preprocess(const std::string& str, size_t& pos)
-{
-	// skip $
-	pos++;
-	std::string ins = retrive_word(str, pos);
-	if (ins == "pre_input")
-	{
-		do
-		{
-			if (str[pos] == '\n' || str[pos] == '\r') {
-				token_stream.push_back(new Endl());
-			}
-			input_buf += str[pos++];
-		} while (str[pos] != '$');
-	}
-	else
-		throw  LexerError("pre_ins: " + ins + " not defined yet.");
-	pos++;
-	std::string end_ins = retrive_word(str, pos);
-	if (end_ins != "end")
-		throw LexerError("illegal terminal word of end preprocess " + end_ins);
-	my_stringstream.str(input_buf);
-	// back to the last char in case of the lexer eating \n or \r which may lead to the wrong line number.
-	pos--;
-}
 
 Token* Mer::parse_number(const std::string& str, size_t& pos)
 {
@@ -160,16 +184,12 @@ Token* Mer::parse_word(const std::string& str, size_t& pos)
 	if (ret == "function")
 		is_function_args = true;
 	if (result != Mer::BasicToken.end())
-	{
 		return result->second;
-	}
 	auto id_result = Id::find(ret);
 	if (id_result != nullptr)
 		return id_result;
 	else
-	{
 		return new Id(ret);
-	}
 }
 Token* Mer::parse_string(const std::string& str, size_t& pos)
 {
@@ -200,8 +220,8 @@ void Mer::build_token_stream(const std::string& content) {
 	{
 		switch (content[i])
 		{
-		case '$':
-			preprocess(content, i);
+		case '#':
+			Preprocessor::preprocessor(content, i);
 			break;
 		case '\'':
 			token_stream.push_back(parse_char(content, i));
@@ -354,6 +374,12 @@ std::string Mer::get_this_id_string_value()
 	auto ret = Id::get_value(token_stream.this_token());
 	token_stream.match(ID);
 	return ret;
+}
+TokenStream & Mer::TokenStream::operator=(const TokenStream & tok_stream)
+{
+	content.assign(tok_stream.content.begin(), tok_stream.content.end());
+	pos = 0;
+	return *this;
 }
 Token* Mer::TokenStream::next_token()
 {

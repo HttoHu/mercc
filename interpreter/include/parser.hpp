@@ -27,6 +27,8 @@
 #include "parser_node.hpp"
 namespace Mer
 {
+	void preprocessor();
+
 	extern std::vector<UptrPNode> pre_stmt;
 	// to ensure variables which declared outside are assigned to global locations
 	bool& global_stmt();

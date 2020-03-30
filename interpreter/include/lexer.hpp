@@ -35,10 +35,12 @@ namespace Mer
 	extern std::string input_buf;
 	extern std::stringstream my_stringstream;
 	void build_token_stream(const std::string& content);
+	void preprocessor(const std::string &content, size_t &i);
 	//=========================================================================
 	enum Tag
 	{
 		EPT=0,
+		SHARP,INCLUDE,
 		SADD, SSUB, SMUL, SDIV, ASSIGN,
 		EQ, NE, GT, GE, LT, LE,
 		PLUS, MINUS, MUL, DIV,
@@ -168,6 +170,8 @@ namespace Mer
 	{
 	public:
 		TokenStream() = default;
+		
+		TokenStream & operator=(const TokenStream & tok_stream);
 		void push_back(Mer::Token* tok)
 		{
 			content.push_back(tok);
@@ -238,10 +242,11 @@ namespace Mer
 		}
 		void remove_tokens();
 		void clear();
+		std::vector<Token*> content;
+		std::vector<Token*> _rem_tok_vec;
 	private:
 		friend void Mer::build_token_stream(const std::string& content);
-		std::vector<Token*> _rem_tok_vec;
-		std::vector<Token*> content;
+
 		size_t pos = 0;
 	};
 	class Endl :public Token
@@ -290,8 +295,8 @@ namespace Mer
 	private:
 		char ch;
 	};
-	void preprocess(const std::string &str,size_t & pos);
 	//=======================================================
+
 	Token* parse_number(const std::string& str, size_t& pos);
 	Token* parse_word(const std::string& str, size_t& pos);
 	Token* parse_string(const std::string& str, size_t& pos);

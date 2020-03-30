@@ -139,7 +139,6 @@ namespace Mer
 	}
 	void Parser::program()
 	{
-		int programe_num = 0;
 		global_stmt() = true;
 		auto ret = std::make_unique<Program>(nullptr);
 		while (1)
