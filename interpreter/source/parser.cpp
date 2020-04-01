@@ -449,7 +449,7 @@ namespace Mer
 			expr = new LConV(Mem::create_var_t(t), t);
 			return;
 		}
-		throw Error("::VarDeclUnit::VarDeclUnit(type_code_index t) : try to init a non-init variable");
+		throw Error("::VarDeclUnit::VarDeclUnit(type_code_index t) : please init variable");
 	}
 
 	inline void _record_id(VarDeclUnit* var_unit, type_code_index type, size_t pos)

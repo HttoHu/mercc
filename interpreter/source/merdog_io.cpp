@@ -146,6 +146,7 @@ namespace Mer
 					default:
 						break;
 					}
+					break;
 				}
 				default:
 					print_str(content[i++]);
@@ -155,6 +156,67 @@ namespace Mer
 			return nullptr;
 		}
 
+		Mem::Object _scanf(const std::vector<Mem::Object>& args)
+		{
+			std::string content = args[0]->to_string();
+			int cnt = 1;
+			int i = 0;
+			try
+			{
+				while (i < content.size())
+				{
+					switch (content[i])
+					{
+					case '%':
+					{
+						i++;
+						if (i == content.size())
+							throw std::runtime_error("runtime_error");
+						switch (content[i])
+						{
+						case 'd':
+						{
+							i++;
+							int tmp; std::cin >> tmp;
+							std::static_pointer_cast<Mem::Pointer>(args[cnt++])->rm_ref()->operator=(_make_int_obj(tmp));
+							continue;
+						}
+						case 'f':
+						{
+							i++;
+							double tmp; std::cin >> tmp;
+							std::static_pointer_cast<Mem::Pointer>(args[cnt++])->rm_ref()->operator=(std::make_shared<Mem::Double>(tmp));
+							continue;
+						}
+						case 'c':
+						{
+							i++;
+							char tmp; std::cin >> tmp;
+							std::static_pointer_cast<Mem::Pointer>(args[cnt++])->rm_ref()->operator=(std::make_shared<Mem::Char>(tmp));
+							continue;
+						}
+						default:
+							throw std::runtime_error("scanf error");
+						}
+						break;
+					}
+					case ' ':
+					case '\t':
+						i++;
+						break;
+					default:
+						if (getchar() != content[cnt])
+							return _make_int_obj(cnt);
+						break;
+					}
+				}
+			}
+			catch (...)
+			{
+				return _make_int_obj(-1);
+			}
+			return _make_int_obj(cnt);
+		}
 		Mem::Object _input_int(const std::vector<Mem::Object>& args)
 		{
 			int obj = 0;
@@ -328,9 +390,10 @@ namespace Mer
 		Mer::SystemFunction* find_str = new SystemFunction(Mem::BasicType::INT, _str_find_str);
 		Mer::SystemFunction* to_lower = new SystemFunction(Mem::BasicType::STRING, _str_to_lower_case);
 		Mer::SystemFunction* to_upper = new SystemFunction(Mem::BasicType::STRING, _str_to_upper_case);
-
+		Mer::SystemFunction* _mer_scanf = new SystemFunction(Mem::BasicType::INT, _scanf);
 		Mer::SystemFunction* cout = new SystemFunction(Mem::BasicType::BVOID, _cout);
 		cout->dnt_check_param();
+		_mer_scanf->dnt_check_param();
 		// set string===========================================
 		substr->set_param_types({ Mer::Mem::BasicType::INT, Mer::Mem::BasicType::INT });
 		str_size->set_param_types({ });
@@ -348,6 +411,7 @@ namespace Mer
 		type_init_function_map[InitKey(Mem::STRING, std::vector<type_code_index>{ Mem::INT, Mem::CHAR })] = str_init;
 		//======================================================
 		root_namespace->set_new_func("printf", cout);
+		root_namespace->set_new_func("scanf", _mer_scanf);
 		_register_internal_function("input_int", Mem::INT, {}, _input_int, mstd);
 		_register_internal_function("input_char", Mem::CHAR, {}, _input_char, mstd);
 		_register_internal_function("input_string", Mem::STRING, {}, _input_string, mstd);
