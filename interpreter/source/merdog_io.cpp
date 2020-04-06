@@ -64,6 +64,19 @@ namespace Mer
 			output_buff += str;
 #endif
 		}
+		template<typename T>
+		void format_print(const char* m, const T & info)
+		{
+			static char buf[50];
+			sprintf_s(buf, m, info);
+			int len = strlen(buf);
+#ifndef DISABLEIO
+			printf("%s",buf);
+#else
+			for (int i = 0; i < len; i++)
+				output_buff += buf[i];
+#endif
+		}
 		std::shared_ptr<Mem::Int> _make_int_obj(int n)
 		{
 			return std::make_shared<Mem::Int>(n);
@@ -125,10 +138,23 @@ namespace Mer
 						throw Error("printf first arg error");
 					switch (content[i])
 					{
+					case '+':
+					case '#':
 					case 'd':
+					case 'o':
+					case 'O':
+					case 'x':
+					case 'X':
 					{
+						char info[4] = { '%',content[i],'\0' };
+						if (content[i] == '#'||content[i]=='+')
+						{
+							i++;
+							info[2] = content[i];
+							info[3] = '\0';
+						}
 						i++;
-						print_str(args[cnt++]->Convert(Mem::INT)->to_string());
+						format_print(info, std::static_pointer_cast<Mem::Int>(args[cnt++]->Convert(Mem::INT))->get_value());
 						continue;
 					}
 					case 'f':

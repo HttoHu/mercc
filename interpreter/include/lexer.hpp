@@ -35,7 +35,6 @@ namespace Mer
 	extern std::string input_buf;
 	extern std::stringstream my_stringstream;
 	void build_token_stream(const std::string& content);
-	void preprocessor(const std::string &content, size_t &i);
 	//=========================================================================
 	enum Tag
 	{
@@ -55,7 +54,7 @@ namespace Mer
 		NEW, MAKE,
 		NOT, AND, OR,
 		REF, BEGIN, END, SEMI, DOT, COMMA,
-		ID, INTEGER, REAL,CHAR_LIT, COLON,
+		ID, INTEGER,UINT, REAL,CHAR_LIT, COLON,LREAL,
 
 		TTRUE, TFALSE,
 		LPAREN, RPAREN,LSB,RSB,
@@ -131,6 +130,20 @@ namespace Mer
 		}
 	private:
 		std::string id_name;
+	};
+	template <typename T>
+	class Literal :public Token {
+	public:
+		Literal(T v, Tag t) :Token(t), value(v) {}
+		static T get_value(Token* tok) {
+			if (tok->check(token_type))
+				throw  Error("type-convert failed");
+		}
+		std::string to_string()const override {
+			return std::to_string(value);
+		}
+	private:
+		T value;
 	};
 	class Integer :public Token
 	{

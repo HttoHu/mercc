@@ -8,6 +8,72 @@ using TokenMap = std::map<std::string, Token*>;
 using TagStrMap = std::map<Tag, std::string>;
 namespace Mer {
 	extern std::map<std::string, void(*)()> repository;
+	namespace num_process {
+		// the number of every bit, convert to dec. 
+		bool is_good_hex_bit(char ch) {
+			if (ch >= '0' && ch <= '9')
+				return true;
+			ch = tolower(ch);
+			if (ch > 'f' || ch < 'a')
+				return false;
+			return true;
+		}
+		int _hbit(char ch) {
+			if (ch >= '0' && ch <= '9')
+				return ch - '0';
+			ch = tolower(ch);
+			if (!is_good_hex_bit(ch))
+				throw LexerError("invalid hex number");
+			return 10 + ch - 'a';
+		}
+		// the number of every bit, convert to dec. 
+		int _obit(char ch) {
+			if (ch > '7' || ch < '0')
+				throw LexerError("invalid oct number");
+			return ch - '0';
+		}
+		Token* integer_to_token(unsigned long long num, const std::string &str, size_t &pos) {
+			// suffix count u is unsigned such 112U. For example 1234LLU, l_count is 2, u_count is 1.
+			int u_count = 0;
+			int l_count = 0;
+
+			while (tolower(str[pos]) == 'u' || tolower(str[pos]) == 'l') {
+				u_count += (tolower(str[pos]) == 'u');
+				l_count += tolower(str[pos]) == 'l';
+				pos++;
+			}
+			// hcc don't distinguish long and long long, long -> 64 bit and long long is also 64 bit.
+			if (u_count > 1 || l_count > 2) { throw LexerError("invalid integer"); }
+			if (u_count) {
+				return new Literal<unsigned int>(num, Tag::UINT);
+			}
+			return new Integer(num);
+		}
+		Token* hex_to_dec(const std::string &str, size_t& pos) {
+			long long ret = 0;
+			for (; pos<str.size(); pos++) {
+				if (!is_good_hex_bit(str[pos]))
+					break;
+				ret *= 16;
+				ret += _hbit(str[pos]);
+			}
+			// int32
+			return new Integer(ret);
+		}
+		Token* oct_to_dec(const std::string& str, size_t &pos) {
+			long long ret = 0;
+			for (; pos<str.size(); pos++) {
+				if (str[pos] < '0' || str[pos]>'7')
+					break;
+				ret *= 8;
+				ret += _obit(str[pos]);
+			}
+			//int32
+			if (ret == 0)
+				return integer_to_token(ret, str, pos);
+			return new Integer(ret);
+		}
+	}
 	namespace Preprocessor
 	{
 		std::string retrive_word(const std::string& str, size_t& pos)
@@ -122,8 +188,18 @@ TokenStream Mer::token_stream;
 
 
 Token* Mer::parse_number(const std::string& str, size_t& pos)
+
 {
-	int ret = 0;
+	unsigned long long ret = 0;
+	// hex or oct number.
+	if (pos<str.size() && str[pos] == '0')
+	{
+		pos++;
+		if (pos < str.size() && tolower(str[pos]) == 'x')
+			return num_process::hex_to_dec(str, ++pos);
+		return num_process::oct_to_dec(str, pos);
+	}
+	// integer part
 	for (; pos < str.size(); pos++)
 	{
 		if (isdigit(str[pos]))
@@ -135,8 +211,8 @@ Token* Mer::parse_number(const std::string& str, size_t& pos)
 			break;
 		}
 	}
-	double tmp = 0.0;
-	double tmp2 = 1;
+	long double tmp = 0.0;
+	long double tmp2 = 1;
 	if (str[pos] == '.')
 	{
 		pos++;
@@ -147,13 +223,22 @@ Token* Mer::parse_number(const std::string& str, size_t& pos)
 				tmp2 /= 10;
 				tmp = tmp + tmp2 * (str[pos] - (size_t)48);
 			}
-			else
+			else if (tolower(str[pos]) == 'l')
 			{
-				return new Real((double)ret + tmp);
+				pos++;
+				return new Literal<long double>((long double)ret + tmp, Tag::LREAL);
 			}
+			else if (tolower(str[pos]) == 'f')
+			{
+				pos++;
+				return new Literal<double>((double)ret + tmp, Tag::REAL);
+			}
+			else
+				return new Literal<double>((double)ret + tmp, Tag::REAL);
 		}
+		throw LexerError("invaild real number");
 	}
-	return new Integer(ret);
+	return num_process::integer_to_token(ret, str, pos);
 }
 
 Token* Mer::parse_word(const std::string& str, size_t& pos)
