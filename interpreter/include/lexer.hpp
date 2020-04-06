@@ -41,6 +41,8 @@ namespace Mer
 		EPT=0,
 		SHARP,INCLUDE,
 		SADD, SSUB, SMUL, SDIV, ASSIGN,
+		//DO not Change relative position of inc, dec,_binc,_bdec,
+		INC,_BINC,DEC,_BDEC,
 		EQ, NE, GT, GE, LT, LE,
 		PLUS, MINUS, MUL, DIV,
 		IMPORT, NAMESPACE, STRUCT,

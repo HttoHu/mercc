@@ -49,12 +49,45 @@ namespace Mer
 		Mem::Object le(const Mem::Object& lhs, const Mem::Object& rhs) {
 			return lhs->operator<=(rhs);
 		}
+		Mem::Object get_neg(const Mem::Object &v) {
+			return v->get_negation();
+		}
+		Mem::Object trans(const Mem::Object &v)
+		{
+			return v;
+		}
+		Mem::Object int_front_inc(const Mem::Object &v)
+		{
+			std::static_pointer_cast<Mem::Int>(v)->get_value()++;
+			return v;
+		}
+		Mem::Object int_back_inc(const Mem::Object &v)
+		{
+			auto ret = v->clone();
+			std::static_pointer_cast<Mem::Int>(v)->get_value()++;
+			return ret;
+		}
+		Mem::Object int_front_dec(const Mem::Object &v)
+		{
+			std::static_pointer_cast<Mem::Int>(v)->get_value()--;
+			return v;
+		}
+		Mem::Object int_back_dec(const Mem::Object &v)
+		{
+			auto ret = v->clone();
+			std::static_pointer_cast<Mem::Int>(v)->get_value()--;
+			return ret;
+		}
 	}
 	namespace optimizer
 	{
 		std::map<Mer::Tag, Mem::Object(*) (const Mem::Object&, const Mem::Object&)> op_table{
 			{Mer::PLUS,add},{MINUS,sub},{MUL,mul},{DIV,div},{SADD,sadd},{SDIV,sdiv},{SADD,sadd},
 			{SSUB,ssub},{ASSIGN,assign},{EQ,equal},{NE,not_equal},{GT,gt},{GE,ge},{LT,lt},{LE,le}
+		};
+		std::map<Mer::Tag, Mem::Object(*)(const Mem::Object&)> unary_op_table{
+			{Mer::MINUS,get_neg},{Mer::PLUS,trans},{NOT,get_neg},{INC,int_front_inc},{DEC,int_front_dec},
+			{_BINC,int_back_inc},{_BDEC,int_back_dec}
 		};
 		ParserNode* optimize_bin_op(ParserNode* left, ParserNode* right, Token* tok)
 		{
@@ -144,7 +177,7 @@ namespace Mer
 				delete left;
 				return new LConV(ret, ty);
 			}
-			return new UnaryOp(tok, left);
+			return new UnaryOp(tok->get_tag(), left);
 		}
 		ParserNode* optimize_array_subscript(ParserNode* arr, ParserNode* subscript)
 		{

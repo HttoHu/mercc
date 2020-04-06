@@ -243,7 +243,7 @@ namespace Mer
 			{
 				return std::make_shared<Int>(-value);
 			}
-			int get_value()
+			int &get_value()
 			{
 				return value;
 			}

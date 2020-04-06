@@ -150,14 +150,15 @@ namespace Mer
 	class UnaryOp :public ParserNode
 	{
 	public:
-		UnaryOp(Token *t, ParserNode* e) :op(t), expr(e) {}
+		UnaryOp(Mem::Object(*o)(const Mem::Object&), ParserNode *e) :op(o), expr(e) {}
+		UnaryOp(Tag t, ParserNode* e);
 		Mem::Object execute()override;
 		type_code_index get_type()override
 		{
 			return expr->get_type();
 		}
 		std::string to_string()override {
-			return op->to_string() + expr->to_string();
+			return expr->to_string() + expr->to_string();
 		}
 		ParserNode* clone()override {
 			return new UnaryOp(op, expr->clone());
@@ -167,7 +168,7 @@ namespace Mer
 			delete expr;
 		}
 	private:
-		Token * op;
+		Mem::Object(*op)(const Mem::Object&);
 		ParserNode* expr;
 	};
 	class Structure;

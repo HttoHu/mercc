@@ -125,6 +125,7 @@ namespace Mer {
 	size_t Endl::current_line = 0;
 	TagStrMap	TagStr{
 		{ IMPORT,"IMPORT" },{ NAMESPACE,"NAMESPACE" },{ STRUCT,"struct" },{ NEW,"new" },{ PTRVISIT,"PTRVISIT" },
+		{INC,"++"},{DEC,"--"},
 		{ SHARP,"SHARP" },{ INCLUDE,"INCLUDE" },
 		{ REF,"REF" },{ PROGRAM,"PROGRAME" },{ COMMA,"COMMA" },{ COLON,"COLON" },
 		{ ID,"ID" },{ INTEGER,"INTEGER" },{ REAL,"REAL" } ,{ FUNCTION,"FUNCTION" },{ RETURN,"RETURN" },
@@ -141,6 +142,7 @@ namespace Mer {
 	};
 	TokenMap	BasicToken{
 		{ "#",new Token(SHARP) },
+		{"++",new Token(INC)},{"--",new Token(DEC)},
 		{ "+",new Token(PLUS) },{ "-",new Token(MINUS) },{ "*",new Token(MUL) },{ "/",new Token(DIV) },{ "=",new Token(ASSIGN) },
 		{ "+=",new Token(SADD) },{ "-=",new Token(SSUB) },{ "*=",new Token(SMUL) },{ "/=",new Token(SDIV) },
 		{ "<",new Token(LT) },{ "<=",new Token(LE) },{ ">",new Token(GT) },{ ">=",new Token(GE) },{ "==",new Token(EQ) },
@@ -303,6 +305,7 @@ void Mer::build_token_stream(const std::string& content) {
 	token_stream.push_back(new Endl());
 	for (size_t i = 0; i < content.size(); i++)
 	{
+		char cur_char = content[i];
 		switch (content[i])
 		{
 		case '#':
@@ -337,26 +340,29 @@ void Mer::build_token_stream(const std::string& content) {
 		case ',':
 			token_stream.push_back(BasicToken[","]);
 			break;
+		case '|':
+		case '-':
+		case '+':
 		case '&':
-			if (i + 1 < content.size() && content[i + 1] == '&')
+			if (i + 1 < content.size() && content[i + 1] == cur_char)
 			{
-				token_stream.push_back(BasicToken["&&"]);
+				token_stream.push_back(BasicToken[std::string(2, cur_char)]);
 				i++;
 				break;
 			}
-			else
-				token_stream.push_back(BasicToken["&"]);
-			break;
-		case '|':
-			if (i + 1 < content.size() && content[i + 1] == '|')
+			else if (i + 1 < content.size() && content[i + 1] == '=')
 			{
-				token_stream.push_back(BasicToken["||"]);
 				i++;
+				token_stream.push_back(BasicToken[std::string{ cur_char,'=' }]);
 			}
+			//->
+			else if (cur_char == '-'&& i + 1 < content.size() && content[i + 1] == '>')
+			{
+				i++; token_stream.push_back(BasicToken[std::string{ cur_char,'>' }]);
+			}
+			else
+				token_stream.push_back(BasicToken[std::string(1, cur_char)]);
 			break;
-		case '+':
-			if (i + 1 < content.size() && content[i + 1] == '+')
-				throw LexerError("merdog doesn't support inc operation, please replaced it with +=1");
 		case '>':
 		case '<':
 		case '=':
@@ -424,23 +430,6 @@ void Mer::build_token_stream(const std::string& content) {
 			token_stream.push_back(BasicToken["/"]);
 			break;
 
-		case '-':
-			if (i + 1 < content.size() && content[i + 1] == '=')
-			{
-				token_stream.push_back(BasicToken["-="]);
-				i++;
-				break;
-			}
-			else if (i + 1 < content.size() && content[i + 1] == '>')
-			{
-				token_stream.push_back(BasicToken["->"]);
-				i++;
-				break;
-			}
-			else if (i + 1 < content.size() && content[i + 1] == '-')
-				throw LexerError("merdog doesn't support dec operation, please replaced it with -=1");
-			token_stream.push_back(BasicToken["-"]);
-			break;
 		case '0':case '1':case '2':case '3':case '4':case '5':case '6':
 		case '7':case '8':case '9':
 			token_stream.push_back(parse_number(content, i));

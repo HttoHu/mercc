@@ -155,6 +155,12 @@ namespace Mer
 			token_stream.match(RSB);
 			result = optimizer::optimize_array_subscript(result, exp);
 		}
+		if (token_stream.this_tag() == INC || token_stream.this_tag() == DEC)
+		{
+			auto real_tag = Tag(token_stream.this_tag() + 1);
+			token_stream.next();
+			return new UnaryOp(real_tag, result);
+		}
 		return result;
 	}
 	ParserNode* Expr::factor()
@@ -200,6 +206,8 @@ namespace Mer
 		case INTEGER:
 			token_stream.next();
 			return new LConV(result);
+		case INC:
+		case DEC:
 		case PLUS:
 		case NOT:
 		case MINUS:
@@ -263,22 +271,17 @@ namespace Mer
 		return left->to_string() + op_tok->to_string() + right->to_string();
 	}
 
+	UnaryOp::UnaryOp(Tag t, ParserNode * e):expr(e)
+	{
+		auto result = optimizer::unary_op_table.find(t);
+		if (result == optimizer::unary_op_table.end())
+			throw Error(std::to_string(t) + " invalid operation");
+		op = result->second;
+	}
+
 	Mer::Mem::Object UnaryOp::execute()
 	{
-		switch (op->get_tag())
-		{
-		case NOT:
-		case MINUS:
-		{
-			auto tmp = expr->execute();
-			auto ret = tmp->get_negation();
-			return Mem::Object(ret);
-		}
-		case PLUS:
-			return expr->execute();
-		default:
-			throw Error("no matched operator");
-		}
+		return op(expr->execute());
 	}
 
 
