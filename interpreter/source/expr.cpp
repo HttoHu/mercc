@@ -166,6 +166,16 @@ namespace Mer
 	ParserNode* Expr::factor()
 	{
 		auto result = token_stream.this_token();
+		// then it must be a type convertion.
+		if (Mem::is_basic_type(result->get_tag()))
+		{
+			auto type_code = Mem::get_type_code(result);
+			token_stream.next();
+			token_stream.match(LPAREN);
+			auto expr = assign();
+			token_stream.match(RPAREN);
+			return new Cast(expr, type_code);
+		}
 		switch (result->get_tag())
 		{
 		case MAKE:
@@ -196,6 +206,16 @@ namespace Mer
 		case LPAREN:
 		{
 			token_stream.match(LPAREN);
+			// if it is a C-style type_convert such as (int)a;
+			auto tok = token_stream.this_token();
+			auto id_result = this_namespace->sl_table->find(tok->to_string());
+
+			if (Mem::is_basic_type(tok->get_tag())||(id_result != nullptr && (id_result->es==STYPE)))
+			{
+				token_stream.next();
+				token_stream.match(RPAREN);
+				return new Cast(assign(), Mem::get_type_code(tok));
+			}
 			ParserNode* v = assign();
 			token_stream.match(RPAREN);
 			return v;

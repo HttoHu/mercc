@@ -30,6 +30,7 @@ using type_code_index = int;
 namespace Mer
 {
 	class Token;
+	enum Tag;
 	class FunctionBase;
 	extern std::map<type_code_index, std::string> type_name_mapping;
 	namespace Mem
@@ -80,7 +81,7 @@ namespace Mer
 		type_code_index& type_no();
 		// to get a compound type's code like vector<map<int,real>>
 		type_code_index get_ctype_code();
-
+		bool is_basic_type(Tag t);
 		int register_container(type_code_index container_type, type_code_index element_type);
 		type_code_index merge(type_code_index l, type_code_index r);
 		std::pair<type_code_index, type_code_index>

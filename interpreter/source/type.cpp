@@ -54,7 +54,19 @@ namespace Mer
 				return false;
 			return true;
 		}
-
+		bool is_basic_type(Tag t) {
+			switch (t)
+			{
+			case CHAR_DECL:
+			case VOID_DECL:
+			case INTEGER_DECL:
+			case REAL_DECL:
+			case BOOL_DECL:
+			case STRING_DECL:
+				return true;
+			}
+			return false;
+		}
 		type_code_index get_type_code()
 		{
 			auto tok = token_stream.this_token();

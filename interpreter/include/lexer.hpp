@@ -113,7 +113,7 @@ namespace Mer
 			return nullptr;
 		}
 		std::string to_string()const override {
-			return "<Id:" + id_name + ">";
+			return  id_name;
 		}
 		static void print()
 		{

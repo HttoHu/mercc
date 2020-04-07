@@ -111,7 +111,17 @@ Mer::ParserNode* Mer::Parser::parse_id()
 	}
 	switch (result->es)
 	{
-
+		//type convert;
+		//type(...) form, (type)epxr has processed within Expr::factor();
+	case ESymbol::STYPE:
+	{
+		//skip type name
+		token_stream.next();
+		token_stream.match(LPAREN);
+		auto expr = Expr().root();
+		token_stream.match(RPAREN);
+		return new Cast(expr, Mem::get_type_code(id));
+	}
 	case ESymbol::SGVAR:
 		return parse_glo(result);
 	case ESymbol::SSTRUCTURE:
