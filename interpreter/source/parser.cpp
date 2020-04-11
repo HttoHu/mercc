@@ -440,7 +440,7 @@ namespace Mer
 			// common condition 
 			expr = Expr(type_code).root();
 			if (expr->get_type() != type_code)
-				throw Error("::VarDeclUnit::VarDeclUnit(type_code_index t): type not matched, from " + type_to_string(type_code) + " to " + type_to_string(expr->get_type()));
+				expr = new Cast(expr, type_code);
 			return;
 		}
 		// container var decl
@@ -449,7 +449,7 @@ namespace Mer
 			expr = new LConV(Mem::create_var_t(t), t);
 			return;
 		}
-		throw Error("::VarDeclUnit::VarDeclUnit(type_code_index t) : please init variable");
+		expr = new LConV(Mem::create_var_t(t), t);
 	}
 
 	inline void _record_id(VarDeclUnit* var_unit, type_code_index type, size_t pos)
