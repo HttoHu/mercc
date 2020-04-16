@@ -94,5 +94,12 @@ namespace Mer
 		std::vector<size_t> block_flag;
 		Mem::Object *stack_mem;
 	};
+	class RawMem
+	{
+	public:
+		char *mem;
+		size_t capacity;
+
+	};
 	extern Memory mem;
 }

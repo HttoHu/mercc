@@ -107,9 +107,23 @@ namespace Mer
 
 	ArrayInitList* Parser::build_array_initlist_tree()
 	{
-		token_stream.match(BEGIN);
+		
 		std::vector<ArrayInitList*> children;
 		std::vector<ParserNode*> leaves;
+		// we regard "HEY" as {'H','E','Y','\0'};
+		if (token_stream.this_tag() == Mer::STRING)
+		{
+			std::string value = String::get_value(token_stream.this_token());
+			for (auto a : value) {
+				leaves.push_back(new LConV(std::make_shared<Mem::Char>(a),Mem::CHAR));
+			}
+			leaves.push_back(new LConV(std::make_shared<Mem::Char>(0), Mem::CHAR));
+			token_stream.next();
+			return new ArrayInitList(leaves);
+		}
+
+		token_stream.match(BEGIN);
+
 		while (token_stream.this_tag() == BEGIN) {
 			children.push_back(build_array_initlist_tree());
 			if (token_stream.this_tag() == END)
@@ -368,18 +382,23 @@ namespace Mer
 					auto right_value = Parser::linearized_array();
 					/*
 						One-dimensional array can be init by one element for example:
-						int arr[100]={1}; and a[0] to a[99] is 1, note that this is different from C/C++.
 					*/
 					if (array_indexs.size() == 1 && right_value.first.size() == 1 && right_value.first.front() == 1) {
 						for (int j = 0; j < array_indexs.front() - 1; j++) {
-							right_value.second.push_back(right_value.second.front()->clone());
+							right_value.second.push_back(new LConV(Mem::create_var_t(type_code), type_code));
 						}
 					}
 					// common condition check the dimension and size
 					else for (int i = 0; i < right_value.first.size(); i++) {
 
-						if (i >= array_indexs.size() || right_value.first[i] != array_indexs[i])
-							throw Error("distinct between declaration and array init list!");
+						if (i >= array_indexs.size()|| right_value.first[i] > array_indexs[i])
+							throw Error("init list overflow!");
+						if (right_value.first[i] < array_indexs[i])
+						{
+							int len = array_indexs[i] - right_value.first[i];
+							for (int j = 0; j < len;j++)
+								right_value.second.push_back(new LConV(Mem::create_var_t(type_code),type_code));
+						}
 					}
 					// set initlist 
 					InitList* tmp = new InitList;
