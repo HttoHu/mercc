@@ -102,7 +102,6 @@ namespace Mer
 			auto& map_content = std::static_pointer_cast<Container::Map>(parents_vec.back())->data;
 			map_content.clear();
 			return nullptr;
-
 		}
 		Mem::Object _map_index_by_number(const std::vector < Mem::Object >& args)
 		{

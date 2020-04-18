@@ -66,7 +66,7 @@ namespace Mer
 		// pointer
 		if (type % 2 == 0)
 		{
-			return std::make_shared<Pointer>(nullptr);
+			return std::make_shared<Pointer>(0);
 		}
 		switch (type)
 		{
@@ -85,7 +85,6 @@ namespace Mer
 			auto result = type_init_map.find(type);
 			if (result == type_init_map.end())
 			{
-
 				return std::make_shared<USObject>(find_ustructure_t(type)->init());
 			}
 			return result->second->clone();
@@ -160,38 +159,56 @@ namespace Mer
 		convertible_types.insert(type_code);
 	}
 
-	Mem::Pointer::Pointer(Object _obj) :obj(_obj)
-	{
-	}
 
 	Mem::Object Mem::Pointer::operator=(Object v)
 	{
-		obj = std::static_pointer_cast<Pointer>(v)->obj;
-		return std::make_shared<Pointer>(obj);
+		add = std::static_pointer_cast<Pointer> (v)->add;
+		return std::make_shared<Pointer>(add);
 	}
 
 	Mem::Object Mem::Pointer::operator==(Object v)
 	{
-		return std::make_shared<Mem::Bool>(std::static_pointer_cast<Pointer>(v)->obj == obj);
+		return std::make_shared<Mem::Bool>(std::static_pointer_cast<Pointer>(v)->add == add);
 	}
 
 	Mem::Object Mem::Pointer::operator!=(Object v)
 	{
-		return std::make_shared<Mem::Bool>(std::static_pointer_cast<Pointer>(v)->obj != obj);
+		return std::make_shared<Mem::Bool>(std::static_pointer_cast<Pointer>(v)->add != add);
+	}
+
+	Mem::Object Mem::Pointer::operator+(Object v)
+	{
+		return std::make_shared<Pointer>(add + *(int*)v->get_raw_data());
+	}
+
+	Mem::Object Mem::Pointer::operator-(Object v)
+	{
+		return std::make_shared<Pointer>(add - *(int*)v->get_raw_data());
 	}
 
 	Mem::Object Mem::Pointer::clone() const
 	{
-		return std::make_shared<Mem::Pointer>(obj);
+		return std::make_shared<Mem::Pointer>(add);
+	}
+
+	Mem::Object Mem::Pointer::rm_ref()
+	{
+		return Mer::mem[add];
+	}
+
+	Mem::Object Mem::Pointer::Convert(type_code_index type)
+	{
+		switch (type) {
+		case Mem::INT:
+			return std::make_shared<Int>(add);
+		default:
+			throw Error("pointer convertion failed");
+		}
 	}
 
 	Mem::Object Mem::Pointer::operator[](Object v)
 	{
-		return obj->operator[](v);
-	}
-
-	Mem::Pointer::~Pointer()
-	{
+		return Mer::mem[std::static_pointer_cast<Int>(v)->get_value() + add];
 	}
 
 	Mem::Object Mem::String::operator[](Object v)

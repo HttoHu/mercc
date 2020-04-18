@@ -64,6 +64,10 @@ namespace Mer
 			{
 				return BasicType::NDEF;
 			}
+			virtual size_t length()const { return 0; }
+			virtual char *get_raw_data() {
+				return nullptr;
+			}
 			virtual Object operator=(Object v)
 			{
 				return nullptr;
@@ -134,6 +138,11 @@ namespace Mer
 			{
 				return BasicType::BOOL;
 			}
+			size_t length()const override { return sizeof(bool); }
+			char *get_raw_data() override {
+				return (char*)(&value);
+			}
+
 			Object Convert(type_code_index type)override;
 			Object get_negation()override
 			{
@@ -175,6 +184,11 @@ namespace Mer
 			{
 				return BasicType::INT;
 			}
+			size_t length()const override { return sizeof(int); }
+			char *get_raw_data() override {
+				return (char*)(&value);
+			}
+
 			Object operator=(Object v)override;
 			Object operator+=(Object v)override
 			{
@@ -267,6 +281,12 @@ namespace Mer
 			{
 				return BasicType::DOUBLE;
 			}
+			size_t length()const override { return sizeof(double); }
+			char *get_raw_data() override {
+				return (char*)(&value);
+			}
+
+
 			Object operator=(Object v)override;
 			Object operator+=(Object v)override
 			{
@@ -368,6 +388,7 @@ namespace Mer
 			{
 				return BasicType::STRING;
 			}
+
 			Object Convert(type_code_index type)override
 			{
 				return std::make_shared<String>(str);
@@ -411,6 +432,7 @@ namespace Mer
 			}
 			std::string str;
 		};
+
 		class InitListObj :public Value
 		{
 		public:
@@ -435,22 +457,24 @@ namespace Mer
 		class Pointer :public Value
 		{
 		public:
-			Pointer(size_t s) = delete;
-			Pointer(Object _obj);
+			Pointer(size_t s) :add(s) {}
+			Pointer(Object _obj)=delete;
 			Mem::Object operator=(Object v)override;
 			Mem::Object operator==(Object v)override;
 			Mem::Object operator!=(Object v)override;
+			Mem::Object operator+(Object v)override;
+			Mem::Object operator-(Object v)override;
 			Mem::Object clone()const override;
-			Mem::Object rm_ref() { return obj; }
+			Mem::Object rm_ref();
+			Object Convert(type_code_index type) override;
 			Object operator[](Object v)override;
 			std::string to_string()const override
 			{
-				return "pointer " + obj->to_string();
+				return "pointer " + std::to_string(add);
 			}
-			~Pointer();
 
 		private:
-			Object obj;
+			size_t add;
 		};
 		class Char :public Value
 		{
@@ -465,6 +489,12 @@ namespace Mer
 			{
 				return BasicType::CHAR;
 			}
+			size_t length()const override { return sizeof(char); }
+			char *get_raw_data() override {
+				return value;
+			}
+
+
 			Object operator=(Object v)override;
 			Object operator+=(Object v)override
 			{

@@ -119,7 +119,9 @@ namespace Mer
 			type_code_index type_code = result->get_type();
 			// get rid of the pointness.
 			type_code_index raw_type = type_code + (type_code % 2 - 1);
-
+			// pointer which may points a struct
+			if (tok->get_tag() == PTRVISIT)
+				result = new RmRef(result,type_code);
 			// member function call
 			if (token_stream.this_tag() == LPAREN)
 			{
@@ -242,7 +244,7 @@ namespace Mer
 			return Parser::parse_id();
 		case NULLPTR:
 			token_stream.match(NULLPTR);
-			return new LConV(std::make_shared<Mem::Pointer>(nullptr), expr_type);
+			return new LConV(std::make_shared<Mem::Pointer>(0), expr_type);
 		default:
 			return new NonOp();
 		}
@@ -474,7 +476,8 @@ namespace Mer
 
 	Mem::Object NewExpr::execute()
 	{
-		return std::make_shared<Mem::Pointer>(expr->execute()->clone());
+		// discarded
+		return nullptr;
 	}
 
 	GetAdd::GetAdd()
@@ -491,7 +494,7 @@ namespace Mer
 
 	Mem::Object Mer::GetAdd::execute()
 	{
-		return std::make_shared<Mem::Pointer>(id->execute());
+		return std::make_shared<Mem::Pointer>(id->get_pos());
 	}
 
 	RmRef::RmRef(bool init_nothing)
@@ -509,7 +512,6 @@ namespace Mer
 	}
 	Mem::Object Mer::RmRef::execute()
 	{
-
 		return std::static_pointer_cast<Mem::Pointer>(id->execute())->rm_ref();
 	}
 	ParserNode* RmRef::clone()
@@ -565,12 +567,12 @@ namespace Mer
 	}
 
 	Mem::Object ArrayDecay::execute() {
-		return std::make_shared<Mem::Pointer>(mem[pos + mem.get_current()+1]);
+		return std::make_shared<Mem::Pointer>(pos + mem.get_current()+1);
 	}
 
 	Mem::Object GloArrayDecay::execute()
 	{
-		return std::make_shared<Mem::Pointer>(mem[pos+1]);
+		return std::make_shared<Mem::Pointer>(pos+1);
 	}
 
 }

@@ -99,7 +99,6 @@ Mer::FunctionCall::~FunctionCall()
 
 Mer::ParserNode* Mer::Parser::parse_id()
 {
-
 	auto id = token_stream.this_token();
 	auto result = this_namespace->sl_table->find(Id::get_value(id));
 	if (result == nullptr)

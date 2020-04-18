@@ -90,6 +90,7 @@ namespace mer
 			any().swap(rhs);
 			return *this;
 		}
+		size_t get_type_length()const { return sizeof(placeholder); }
 	private:
 		placeholder* content;
 		template<typename _Ty>

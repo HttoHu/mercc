@@ -289,6 +289,7 @@ namespace Mer
 	{
 	public:
 		RmRef(bool init_nothing = false);
+		RmRef(ParserNode * node, type_code_index _t) :id(node), type(_t) {}
 		type_code_index get_type()override;
 		Mem::Object execute()override;
 		ParserNode* clone()override;
