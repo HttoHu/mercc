@@ -199,7 +199,8 @@ Token* Mer::parse_number(const std::string& str, size_t& pos)
 		pos++;
 		if (pos < str.size() && tolower(str[pos]) == 'x')
 			return num_process::hex_to_dec(str, ++pos);
-		return num_process::oct_to_dec(str, pos);
+		if(str[pos]!='.')
+			return num_process::oct_to_dec(str, pos);
 	}
 	// integer part
 	for (; pos < str.size(); pos++)
@@ -310,6 +311,8 @@ void Mer::build_token_stream(const std::string& content) {
 		{
 		case '#':
 			Preprocessor::preprocessor(content, i);
+			// in case it eat \n
+			i--;
 			break;
 		case '\'':
 			token_stream.push_back(parse_char(content, i));

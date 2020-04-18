@@ -127,8 +127,10 @@ namespace Mer
 			std::string content = args[0]->to_string();
 			int cnt = 1;
 			int i = 0;
+
 			while (i < content.size())
 			{
+				std::string format_output_tag="%";
 				switch (content[i])
 				{
 				case '%':
@@ -136,6 +138,16 @@ namespace Mer
 					i++;
 					if (i == content.size())
 						throw Error("printf first arg error");
+					if (content[i] == '.')
+					{
+						format_output_tag += content[i++];
+						while (isdigit(content[i]))
+						{
+							format_output_tag += content[i++];
+						}
+					}
+					if (content[i] == 'l')
+						format_output_tag += content[i++];
 					switch (content[i])
 					{
 					case '+':
@@ -160,7 +172,9 @@ namespace Mer
 					case 'f':
 					{
 						i++;
-						print_str(args[cnt++]->Convert(Mem::DOUBLE)->to_string());
+						format_output_tag += 'f';
+						format_print(format_output_tag.c_str(), 
+							std::static_pointer_cast<Mem::Double>(args[cnt++]->Convert(Mem::DOUBLE))->get_value());
 						continue;
 					}
 					case 'c':

@@ -216,7 +216,8 @@ namespace Mer
 			{
 				token_stream.next();
 				token_stream.match(RPAREN);
-				return new Cast(assign(), Mem::get_type_code(tok));
+				std::cout << Mem::get_type_code(tok) << std::endl;;
+				return new Cast(factor(), Mem::get_type_code(tok));
 			}
 			ParserNode* v = assign();
 			token_stream.match(RPAREN);
