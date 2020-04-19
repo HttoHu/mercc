@@ -472,7 +472,7 @@ namespace Mer
 			{
 				return "pointer " + std::to_string(add);
 			}
-
+			size_t get_value()const { return add; }
 		private:
 			size_t add;
 		};

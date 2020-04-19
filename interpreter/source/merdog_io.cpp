@@ -183,6 +183,24 @@ namespace Mer
 						print_str(args[cnt++]->Convert(Mem::CHAR)->to_string());
 						continue;
 					}
+					case 's':
+					{
+						i++;
+						size_t pos = std::static_pointer_cast<Mem::Pointer>(args[cnt++])->get_value();
+						while (1) {
+							char * data = Mer::mem[pos]->get_raw_data();
+							int len = Mer::mem[pos]->length();
+							for (int i = 0; i < len; i++)
+							{
+								if (!data[i])
+									goto EP;
+								print_str(data[i]);
+							}
+							pos++;
+						}
+					EP:
+						continue;
+					}
 					default:
 						break;
 					}
@@ -233,6 +251,16 @@ namespace Mer
 							i++;
 							char tmp; std::cin >> tmp;
 							std::static_pointer_cast<Mem::Pointer>(args[cnt++])->rm_ref()->operator=(std::make_shared<Mem::Char>(tmp));
+							continue;
+						}
+						case 's':
+						{
+							i++;
+							std::string tmp; std::cin >> tmp;
+							size_t pos = std::static_pointer_cast<Mem::Pointer>(args[cnt++])->get_value();
+							for (auto a : tmp)
+								mem[pos++] = std::make_shared<Mem::Char>(a);
+							mem[pos] = std::make_shared<Mem::Char>('\0');
 							continue;
 						}
 						default:
