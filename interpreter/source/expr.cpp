@@ -503,7 +503,7 @@ namespace Mer
 		if (init_nothing)
 			return;
 		token_stream.match(MUL);
-		id = Parser::parse_id();
+		id = Expr().root();
 		type = id->get_type();
 	}
 

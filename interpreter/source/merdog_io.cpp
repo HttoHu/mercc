@@ -333,123 +333,10 @@ namespace Mer
 				my_stringstream >> obj;
 			return std::make_shared<Mem::String>(obj);
 		}
-#ifdef USING_CXX17
-		Mem::Object _open(std::vector<Mem::Object>& args)
-		{
-			auto arg1 = parents_vec.back();
-			auto ss = std::static_pointer_cast<USObject>(arg1);
-			std::ifstream ifs;
-			ifs.open(args[0]->to_string());
-			if (!std::filesystem::exists(args[0]->to_string()))
-				throw std::runtime_error("file " + args[0]->to_string() + " don't exist");
-			(*ss)[_make_int_obj(0)]->operator=(args[0]->clone());
-			std::vector<std::string> str_vec;
-			std::string tmp = "";
-			while (std::getline(ifs, tmp))
-				str_vec.push_back(tmp);
-			ifs.close();
-			*std::static_pointer_cast<Mem::AnyObj>((*ss)[std::make_shared<Mem::Int>(1)]) = std::move(str_vec);
-			return nullptr;
-		}
-		Mem::Object _read_line(std::vector<Mem::Object>& args)
-		{
-			auto arg1 = parents_vec.back();
-			auto ss = std::static_pointer_cast<USObject>(arg1);
-			return std::make_shared<Mem::String>((*std::static_pointer_cast<Mem::AnyObj>((*ss)[std::make_shared<Mem::Int>(1)])).
-				cast<std::vector<std::string>>()[Mem::get_raw<int>(args[0])]);
-		}
-		Mem::Object _set_line(std::vector<Mem::Object>& args)
-		{
-			auto ss = std::static_pointer_cast<USObject>(parents_vec.back());
-			auto content = std::static_pointer_cast<Mem::AnyObj>(ss->operator[](std::make_shared<Mem::Int>(1)));
-			auto& file_content = content->cast<std::vector<std::string>>();
-			file_content[std::static_pointer_cast<Mem::Int>(args[0])->get_value()] = args[1]->to_string();
-			return nullptr;
-		}
-		Mem::Object _insert_line(std::vector<Mem::Object>& args)
-		{
-			auto fobj = std::static_pointer_cast<USObject>(parents_vec.back());
-			int line_no = Mem::Int::get_val(args[0]);
-			auto content = std::static_pointer_cast<Mem::AnyObj>(fobj->operator[](_make_int_obj(1)));
-			auto& file_content = content->cast<std::vector<std::string>>();
-			std::string insert_content = args[1]->to_string();
-			file_content.insert(file_content.begin() + line_no, insert_content);
-			return nullptr;
-		}
-		Mem::Object _write_into_file(std::vector<Mem::Object>& args)
-		{
-			auto fobj = std::static_pointer_cast<USObject>(parents_vec.back());
-			auto content = std::static_pointer_cast<Mem::AnyObj>(fobj->operator[](std::make_shared<Mem::Int>(1)));
-			auto& file_content = content->cast<std::vector<std::string>>();
-			std::string file_name = fobj->operator[](_make_int_obj(0))->to_string();
-			if (!std::filesystem::exists(file_name))
-				throw std::runtime_error("file " + file_name + " don't exist");
-			std::ofstream of(file_name);
-			of.clear();
-			for (const auto& a : file_content)
-			{
-				of << a << std::endl;
-			}
-			of.close();
-			return nullptr;
-		}
-		Mem::Object _line_count(std::vector<Mem::Object>& args)
-		{
-			auto obj = std::static_pointer_cast<USObject>(parents_vec.back());
-			auto ret = std::static_pointer_cast<Mem::AnyObj>((obj->operator[](_make_int_obj(1))))->cast<std::vector<std::string>>().size();
-			return _make_int_obj(ret);
-		}
-		Mem::Object _exists_file(std::vector<Mem::Object>& args)
-		{
-			return std::make_shared<Mem::Bool>(std::filesystem::exists(parents_vec.back()->to_string()));
-		}
-#endif
 	}
 
 	Namespace* mstd = new Namespace(nullptr);
 
-#ifdef USING_CXX17
-	void set_file_operator_class()
-	{
-
-		UStructure* filestream = new UStructure();
-		std::string class_name = "file_stream";
-		Mem::type_counter += 2;
-		Mer::this_namespace->sl_table->push(class_name, new WordRecorder(ESymbol::SSTRUCTURE, Mem::type_counter));
-		// set the structure of the class
-		filestream->init_vec.push_back(std::make_shared<Mem::String>(""));
-		filestream->init_vec.push_back(std::make_shared<Mem::AnyObj>(0));
-		// register the information of file_stream
-		ustructure_map.insert({ class_name,filestream });
-		Mem::type_index.insert({ class_name,Mem::type_counter });
-		type_name_mapping.insert({ Mem::type_counter,class_name });
-		Mem::type_map.insert({ Mem::type_counter,new Mem::Type(class_name,Mem::type_counter,{size_t(Mem::type_counter)}) });
-		// set opem method
-		auto open_file = new SystemFunction(Mem::BasicType::BVOID, _open);
-		open_file->set_param_types({ (size_t)Mem::type_counter,Mem::STRING });
-		member_function_table[Mem::type_counter].insert({ "open",open_file });
-
-		auto read_line = new SystemFunction(Mem::BasicType::STRING, _read_line);
-		read_line->set_param_types({ (size_t)Mem::type_counter,Mem::INT });
-		member_function_table[Mem::type_counter].insert({ "read",read_line });
-
-		auto set_line = new SystemFunction(Mem::BasicType::BVOID, _set_line);
-		set_line->set_param_types({ (size_t)Mem::type_counter,Mem::INT,Mem::STRING });
-		member_function_table[Mem::type_counter].insert({ "set_line",set_line });
-
-		auto insert = new SystemFunction(Mem::BVOID, _insert_line);
-		insert->set_param_types({ (size_t)Mem::type_counter,Mem::INT,Mem::STRING });
-		member_function_table[Mem::type_counter].insert({ "insert",insert });
-
-		auto write_into_file = new SystemFunction(Mem::BVOID, _write_into_file);
-		write_into_file->set_param_types({ (size_t)Mem::type_counter });
-		member_function_table[Mem::type_counter].insert({ "write_into_file",write_into_file });
-
-		auto line_count = new SystemFunction(Mem::BVOID, _line_count);
-		line_count->set_param_types({ (size_t)Mem::type_counter });
-		member_function_table[Mem::type_counter].insert({ "line_count",line_count });
-}
-#endif
 	void set_io()
 	{
 		Mer::SystemFunction* substr = new SystemFunction(Mem::BasicType::STRING, _substr);
@@ -485,13 +372,6 @@ namespace Mer
 		_register_internal_function("input_string", Mem::STRING, {}, _input_string, mstd);
 		_register_internal_function("input_real", Mem::DOUBLE, {}, _input_real, mstd);
 		_register_internal_function("getline", Mem::STRING, {}, _get_line, mstd);
-#ifdef COMPILE_MERDOG_NEED_CXX17
-		auto exists_file = new SystemFunction(Mem::BOOL, _exists_file);
-		exists_file->set_param_types({ Mem::STRING });
-		//file_stream
-		set_file_operator_class();
-		mstd->set_new_func("exist_file", exists_file);
-#endif
 
 	}
 }

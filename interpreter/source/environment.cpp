@@ -15,21 +15,26 @@
 #include "../include/function.hpp"
 #include "../include/memory.hpp"
 #include "../include/compound_box.hpp"
-std::map<std::string, void(*)()> Mer::repository{
-	{"vector",Mer::Container::using_vector},{"deque",Mer::Container::using_deque},
-	{"set",Mer::using_set},{"map",Mer::using_map},{"stdio.h",Mer::set_io}
-};
-std::vector<size_t*> Mer::_pcs;
-std::string Mer::output_buff = "";
-std::vector<std::pair<Mer::PosPtr, Mer::PosPtr>> Mer::_nearest_loop_pos;
-std::vector<Mer::ParserNode*> Mer::structure_parent_stack;
+
 
 
 namespace Mer
 {
+	void set_cstring();
+	std::map<std::string, void(*)()> repository{
+		{ "vector",Container::using_vector },{ "deque",Container::using_deque },
+		{ "set",using_set },{ "map",using_map },{ "stdio.h",set_io },{"string.h",set_cstring}
+	};
+
+
+	std::vector<size_t*> _pcs;
+	std::string output_buff = "";
+	std::vector<std::pair<PosPtr, PosPtr>> _nearest_loop_pos;
+	std::vector<Mer::ParserNode*> structure_parent_stack;
+
 	std::string input_buf = "";
 	std::stringstream my_stringstream;
-	extern std::map<type_code_index, std::map<std::string, Mer::FunctionBase*>> member_function_table;
+	extern std::map<type_code_index, std::map<std::string, FunctionBase*>> member_function_table;
 	extern std::map<std::string, UStructure*> ustructure_map;
 	namespace Mem
 	{

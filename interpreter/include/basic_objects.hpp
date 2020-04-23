@@ -464,6 +464,8 @@ namespace Mer
 			Mem::Object operator!=(Object v)override;
 			Mem::Object operator+(Object v)override;
 			Mem::Object operator-(Object v)override;
+			Mem::Object operator+=(Object v)override;
+			Mem::Object operator-=(Object v)override;
 			Mem::Object clone()const override;
 			Mem::Object rm_ref();
 			Object Convert(type_code_index type) override;

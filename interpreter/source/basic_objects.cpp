@@ -178,12 +178,22 @@ namespace Mer
 
 	Mem::Object Mem::Pointer::operator+(Object v)
 	{
-		return std::make_shared<Pointer>(add + *(int*)v->get_raw_data());
+		return std::make_shared<Pointer>(add + *(size_t*)v->get_raw_data());
 	}
 
 	Mem::Object Mem::Pointer::operator-(Object v)
 	{
-		return std::make_shared<Pointer>(add - *(int*)v->get_raw_data());
+		return std::make_shared<Pointer>(add - *(size_t*)v->get_raw_data());
+	}
+
+	Mem::Object Mem::Pointer::operator+=(Object v)
+	{
+		return std::make_shared<Pointer>(add += *(size_t*)v->get_raw_data());
+	}
+
+	Mem::Object Mem::Pointer::operator-=(Object v)
+	{
+		return std::make_shared<Pointer>(add -= *(size_t*)v->get_raw_data());
 	}
 
 	Mem::Object Mem::Pointer::clone() const
