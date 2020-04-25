@@ -20,6 +20,8 @@ namespace Mer
 		{
 			expr_type = tree->get_type();
 		}
+		else if (expr_type != tree->get_type())
+			tree = new Cast(tree, expr_type);
 	}
 	type_code_index Expr::get_type()
 	{
@@ -29,9 +31,7 @@ namespace Mer
 		}
 		if (tree == nullptr)
 			return Mem::BVOID;
-		if (expr_type != 0)
-			return expr_type;
-		return tree->get_type();
+		return expr_type;
 	}
 	ParserNode* Expr::assign()
 	{
@@ -215,10 +215,14 @@ namespace Mer
 
 			if (Mem::is_basic_type(tok->get_tag())||(id_result != nullptr && (id_result->es==STYPE)))
 			{
-				token_stream.next();
+				size_t convert_type_code = Mem::get_type_code();
+				if (token_stream.this_tag() == MUL)
+				{
+					convert_type_code++;
+					token_stream.next();
+				}
 				token_stream.match(RPAREN);
-				std::cout << Mem::get_type_code(tok) << std::endl;;
-				return new Cast(factor(), Mem::get_type_code(tok));
+				return new Cast(factor(), convert_type_code);
 			}
 			ParserNode* v = assign();
 			token_stream.match(RPAREN);
@@ -245,11 +249,13 @@ namespace Mer
 		case ID:
 			return Parser::parse_id();
 		case NULLPTR:
-			/* in case return nullptr;*/
-			if (expr_type == 0)
-				expr_type = current_function_rety;
+		{
 			token_stream.match(NULLPTR);
-			return new LConV(std::make_shared<Mem::Pointer>(0), expr_type);
+			type_code_index to_convert_type = expr_type;
+			if (to_convert_type)
+				to_convert_type = Mem::BVOID + 1;
+			return new LConV(std::make_shared<Mem::Pointer>(0), to_convert_type);
+		}
 		default:
 			return new NonOp();
 		}

@@ -96,5 +96,7 @@ namespace Mer
 		// get the operator function type
 		type_code_index find_op_type(type_code_index ty, std::string op);
 		bool exist_operator(type_code_index ty, std::string op);
+		// to test if t1 can convert to t2
+		bool type_convertible(type_code_index t1, type_code_index t2);
 	}
 }

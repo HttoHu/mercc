@@ -46,13 +46,21 @@ Mer::ParserNode* Mer::Variable::clone()
 
 Mer::FunctionCall::FunctionCall( FunctionBase* _func, const std::vector<ParserNode*>& exprs) : func(_func), argument(exprs)
 {
-	std::vector<type_code_index> type_vec;
-	for (const auto& a : exprs)
+	if (!_func->is_check_type())
+		return;
+	for (int i = 0; i < argument.size(); i++)
 	{
-		type_vec.push_back(a->get_type());
+		type_code_index arg_type = argument[i]->get_type(), param_type = func->param_types[i];
+		if (arg_type!=param_type)
+		{
+			// common ptr can convert to void ptr
+			if (arg_type == Mem::BVOID + 1 && param_type % 2 == 0)
+				continue;
+			else
+				// type convert
+				argument[i] = new Cast(argument[i], param_type);
+		}
 	}
-	func->check_param(type_vec);
-	std::vector<ParserNode*> tmp;
 }
 
 type_code_index Mer::FunctionCall::get_type()

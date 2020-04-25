@@ -212,7 +212,7 @@ namespace Mer
 		case Mem::INT:
 			return std::make_shared<Int>(add);
 		default:
-			throw Error("pointer convertion failed");
+			return clone();
 		}
 	}
 

@@ -46,10 +46,32 @@ namespace Mer {
 	end_pos:
 		return args[0]->clone();
 	}
+	// memset( void *dest, int v, int size)  
+	// I knew the type of size should be size_t ,however I didn't want to create a unsigned type.
+	Mem::Object mmemset(const std::vector<Mem::Object>& args)
+	{
+		size_t dest_pos = std::static_pointer_cast<Mem::Pointer>(args[0])->get_value();
+		int set_num = *(int*)(args[1]->get_raw_data());
+		int size = *(int*)(args[2]->get_raw_data());
+		int i = 0;
+		while (true)
+		{
+			char *dest_data = Mer::mem[dest_pos]->get_raw_data();
+			int len = Mer::mem[dest_pos]->length();
+			for (int j = 0; j < len; j++)
+				dest_data[i] = set_num;
+			i += len;
+
+			if (i >= size)
+				break;
+		}
+		return args[0]->clone();
+	}
 
 	void set_cstring()
 	{
 		_register_internal_function("strlen", Mem::INT, { Mem::CHAR + 1 }, mstrlen);
 		_register_internal_function("strcpy", Mem::CHAR+1, { Mem::CHAR + 1,Mem::CHAR+1 }, mstrcpy);
+		_register_internal_function("memset", Mem::BVOID + 1, { Mem::BVOID + 1,Mem::INT ,Mem::INT }, mmemset);
 	}
 }

@@ -55,6 +55,18 @@ namespace Mer
 				return false;
 			return true;
 		}
+		bool type_convertible(type_code_index t1, type_code_index t2)
+		{
+			if (t1 == t2)
+				return true;
+			if (t1 == BVOID + 1 && t2 % 2==0)
+				return true;
+			auto result1 = type_map.find(t1), result2 = type_map.find(t2);
+			if (result1 == type_map.end() || result2 == type_map.end())
+				throw Error("type undefined");
+			return result1->second->convertible(t2);
+			
+		}
 		bool is_basic_type(Tag t) {
 			switch (t)
 			{

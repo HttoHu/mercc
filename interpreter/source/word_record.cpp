@@ -70,7 +70,26 @@ FunctionBase* Mer::FuncIdRecorder::find(const std::vector<type_code_index>& pf)
 	if (dnt_check)
 		return functions[std::vector<type_code_index>()];
 	if (functions.find(pf) == functions.end())
+	{
+		for (const auto &it : functions)
+		{
+			if (it.first.size() != pf.size())
+				continue;
+			bool ok = true;
+			for (int i = 0; i < pf.size(); i++)
+			{
+				if (!Mem::type_convertible(it.first[i], pf[i]))
+				{
+					ok = false;
+					break;
+				}
+			}
+
+			if (ok)
+				return it.second;
+		}
 		return nullptr;
+	}
 	return functions[pf];
 }
 

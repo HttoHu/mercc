@@ -48,7 +48,7 @@ namespace Mer
 					break;
 				case RETURN:
 					token_stream.match(RETURN);
-					current_ins_table->push_back(std::make_unique<Return>(_pcs.back(), Expr().root()));
+					current_ins_table->push_back(std::make_unique<Return>(_pcs.back(), Expr(current_function_rety).root()));
 					token_stream.match(SEMI);
 					break;
 				case FOR:
