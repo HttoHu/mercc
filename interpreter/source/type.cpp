@@ -19,8 +19,9 @@ namespace Mer
 			{ BasicType::DOUBLE,new Type("double",BasicType::DOUBLE,{ BasicType::INT,BasicType::BOOL,BasicType::DOUBLE }) },
 			{ BasicType::BOOL,new Type("bool",BasicType::BOOL,{ BasicType::INT,BasicType::BOOL,BasicType::DOUBLE }) },
 			{ BasicType::STRING,new Type("string",BasicType::STRING,{ 11,BasicType::STRING }) },
-			{BasicType::CHAR,new Type("char",BasicType::CHAR,{9,BasicType::CHAR,BasicType::INT,BasicType::STRING})},
-			{BasicType::INIT_LIST,new Type("init_list",BasicType::INIT_LIST,{})}
+			{ BasicType::CHAR,new Type("char",BasicType::CHAR,{9,BasicType::CHAR,BasicType::INT,BasicType::STRING})},
+			{ BasicType::INIT_LIST,new Type("init_list",BasicType::INIT_LIST,{})},
+			{ BasicType::BVOID,new Type("void",BasicType::BVOID,{})}
 		};
 		type_code_index type_counter = BASICTYPE_MAX_CODE;
 		std::map<type_code_index, void(*)(type_code_index)> container_register;
@@ -71,20 +72,27 @@ namespace Mer
 		{
 			auto tok = token_stream.this_token();
 			token_stream.next();
+			type_code_index ret = 0;
 			switch (tok->get_tag())
 			{
 			case CHAR_DECL:
-				return CHAR;
+				ret= Mem::CHAR;
+				break;
 			case VOID_DECL:
-				return BVOID;
+				ret = BVOID;
+				break;
 			case INTEGER_DECL:
-				return INT;
+				ret = Mem::INT;
+				break;
 			case REAL_DECL:
-				return DOUBLE;
+				ret = Mem::DOUBLE;
+				break;
 			case BOOL_DECL:
-				return BOOL;
+				ret = Mem::BOOL;
+				break;
 			case STRING_DECL:
-				return STRING;
+				ret = STRING;
+				break;
 			case ID:
 			{
 				auto info = Mer::this_namespace->sl_table->find(Id::get_value(tok));
@@ -97,11 +105,12 @@ namespace Mer
 				}
 				if (info == nullptr)
 					throw Error("id: " + Id::get_value(token_stream.this_token()) + "no found");
-				return info->get_type();
+				ret=info->get_type();
 			}
 			default:
 				throw Error(token_stream.this_token()->to_string() + " unknown type ");
 			}
+			return ret;
 		}
 
 		type_code_index get_type_code(Token* tok)

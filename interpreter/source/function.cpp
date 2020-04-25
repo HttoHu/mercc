@@ -146,7 +146,6 @@ std::pair<std::string, Function*> Parser::_build_function()
 
 void Mer::Parser::build_function(size_t rtype,std::string name)
 {
-	
 	current_function_rety = rtype;
 	this_namespace->sl_table->new_block();
 	mem.new_block();
@@ -206,11 +205,14 @@ void Mer::Parser::build_function(size_t rtype,std::string name)
 	}
 	// set function 
 	this_namespace->set_new_func(name, ret);
+
 	Mer::global_stmt() = false;
 	_pcs.push_back(ret->pc);
 	current_ins_table = &(ret->stmts);
+
 	// off get the var_size of the function
 	Parser::build_function_block();
+
 	// count function size;
 	ret->off = mem.function_block_size;
 	mem.reset_func_block_size();

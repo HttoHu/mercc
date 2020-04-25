@@ -38,8 +38,8 @@ namespace Mer
 
 		enum BasicType
 		{
-			ARRAY = -2, NDEF = -1, BVOID = 0, INT = 1, DOUBLE = 3, STRING = 5, BOOL = 7, CHAR = 9,
-			INIT_LIST=11,
+			ARRAY = -2, NDEF = -1, BVOID = 13, INT = 1, DOUBLE = 3, STRING = 5, BOOL = 7, CHAR = 9,
+			INIT_LIST=11
 		};
 		class Type
 		{

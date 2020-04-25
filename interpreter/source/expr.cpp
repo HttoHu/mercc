@@ -13,6 +13,7 @@
 
 namespace Mer
 {
+	extern size_t current_function_rety;
 	Expr::Expr(type_code_index t) :is_bool(false), expr_type(t) {
 		tree = assign();
 		if (expr_type == 0 && tree->get_type() != 0)
@@ -244,6 +245,9 @@ namespace Mer
 		case ID:
 			return Parser::parse_id();
 		case NULLPTR:
+			/* in case return nullptr;*/
+			if (expr_type == 0)
+				expr_type = current_function_rety;
 			token_stream.match(NULLPTR);
 			return new LConV(std::make_shared<Mem::Pointer>(0), expr_type);
 		default:

@@ -214,6 +214,13 @@ namespace Mer
 	ParserNode* Parser::var_decl()
 	{
 		type_code_index type = Mem::get_type_code();
+		bool pointer_type = false;
+		if (token_stream.this_tag() == MUL)
+		{
+			token_stream.match(MUL);
+			type++;
+			pointer_type = true;
+		}
 		// if it is a function decl
 		if (global_stmt() && token_stream.this_tag() == ID)
 		{
@@ -229,6 +236,12 @@ namespace Mer
 			{
 				token_stream.back();
 			}
+		}
+
+		if (pointer_type)
+		{
+			token_stream.back();
+			type--;
 		}
 		std::vector<VarDeclUnit*> units;
 		units.push_back(new VarDeclUnit(type));
@@ -351,7 +364,7 @@ namespace Mer
 		// init a var by it's initializer
 		if (token_stream.this_tag() == LPAREN)
 		{
-			expr = Parser::parse_initializer(t);
+			expr = Parser::parse_initializer(type_code);
 			return;
 		}
 		// manage to process array , the front of an array is an info obj which records the array's elemens's type and length and pos;
@@ -465,10 +478,10 @@ namespace Mer
 		// container var decl
 		if (type_info->second->type_kind == Mem::Type::kind::container)
 		{
-			expr = new LConV(Mem::create_var_t(t), t);
+			expr = new LConV(Mem::create_var_t(type_code), type_code);
 			return;
 		}
-		expr = new LConV(Mem::create_var_t(t), t);
+		expr = new LConV(Mem::create_var_t(type_code), type_code);
 	}
 
 	inline void _record_id(VarDeclUnit* var_unit, type_code_index type, size_t pos)
@@ -502,9 +515,7 @@ namespace Mer
 	LocalVarDecl::LocalVarDecl(std::vector<VarDeclUnit*>& vec, type_code_index t) :type(t)
 	{
 		for (const auto& a : vec)
-		{
 			sum += a->get_size();
-		}
 		pos = mem.push(sum) - sum;
 		size_t tmp_pos = pos;
 		// the var may be array ,pointer or a common var.

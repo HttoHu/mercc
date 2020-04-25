@@ -472,7 +472,7 @@ namespace Mer
 	}
 	Return::Return(size_t* _pc, ParserNode* _expr) :pc(_pc), expr(_expr)
 	{
-		if (current_function_rety != expr->get_type())
+		if (current_function_rety != expr->get_type() && /*common ptr can cast to void ptr*/(current_function_rety!=Mem::BVOID+1 || expr->get_type()%2))
 			throw Error("return type not matched with function return type");
 		des = this_block_size;
 	}

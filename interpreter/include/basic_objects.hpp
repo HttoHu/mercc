@@ -39,7 +39,7 @@
 #include "type.hpp"
 #include "clib/any.hpp"
 using type_code_index = int;
-const int BASICTYPE_MAX_CODE = 11;
+const int BASICTYPE_MAX_CODE = 13;
 namespace Mer
 {
 	class StructureBase;
