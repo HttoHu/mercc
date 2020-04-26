@@ -47,17 +47,19 @@ namespace Mer
 			enum class kind {
 				single = 0, container = 1, dictionary = 2,structure=3,
 			}type_kind = kind::single;
-			Type(const std::string& _name, type_code_index bt, const std::set<type_code_index>& _convertible_types)
-				:name(_name), type_code(bt), convertible_types(_convertible_types) {}
+			Type(const std::string& _name, type_code_index bt, const std::set<type_code_index>& _convertible_types,size_t tc=0)
+				:name(_name), type_code(bt), convertible_types(_convertible_types),type_size(tc) {}
 			bool convertible(const type_code_index& t);
 			void add_compatible_type(type_code_index type_code);
 			virtual std::string to_string() { return  name; }
+			virtual std::size_t get_type_size() { return type_size; }
 			virtual ~Type() {}
 
 		protected:
 			std::set<type_code_index> convertible_types;
 			type_code_index type_code;
 			std::string name;
+			size_t type_size;
 		};
 		struct ComplexType
 		{
@@ -98,5 +100,7 @@ namespace Mer
 		bool exist_operator(type_code_index ty, std::string op);
 		// to test if t1 can convert to t2
 		bool type_convertible(type_code_index t1, type_code_index t2);
+
+		size_t get_type_length(type_code_index t);
 	}
 }

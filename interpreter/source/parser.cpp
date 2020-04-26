@@ -59,8 +59,25 @@ namespace Mer
 
 		token_stream.match(SIZEOF);
 		token_stream.match(LPAREN);
-		auto result = this_namespace->sl_table->find(Id::get_value(token_stream.this_token()));
-		obj = std::make_shared<Mem::Int>(result->count);
+		Mer::WordRecorder* result = nullptr;
+		if (token_stream.this_tag() == ID)
+			result = this_namespace->sl_table->find(Id::get_value(token_stream.this_token()));
+		// sizeof(type)
+		if (Mem::is_basic_type(token_stream.this_tag()) || result&& result->es == STYPE)
+		{
+			type_code_index type_code= Mem::get_type_code();
+			if (token_stream.this_tag() == MUL)
+				obj = std::make_shared<Mem::Int>(sizeof(size_t));
+			else
+				obj = std::make_shared<Mem::Int>(Mem::get_type_length(type_code));
+			token_stream.match(RPAREN);
+			return;
+		}
+		// sizeof(var)
+		if (result == nullptr)
+			throw Error("undefined id " + Id::get_value(token_stream.this_token()));
+		size_t type_len = Mem::get_type_length(result->get_type());
+		obj = std::make_shared<Mem::Int>(result->count*type_len);
 		token_stream.next();
 		token_stream.match(RPAREN);
 

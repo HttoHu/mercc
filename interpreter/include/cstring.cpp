@@ -54,16 +54,13 @@ namespace Mer {
 		int set_num = *(int*)(args[1]->get_raw_data());
 		int size = *(int*)(args[2]->get_raw_data());
 		int i = 0;
-		while (true)
+		while (i<size)
 		{
 			char *dest_data = Mer::mem[dest_pos]->get_raw_data();
-			int len = Mer::mem[dest_pos]->length();
+			int len = Mer::mem[dest_pos++]->length();
 			for (int j = 0; j < len; j++)
-				dest_data[i] = set_num;
+				dest_data[j] = set_num;
 			i += len;
-
-			if (i >= size)
-				break;
 		}
 		return args[0]->clone();
 	}
