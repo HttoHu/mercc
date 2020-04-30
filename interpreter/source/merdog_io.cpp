@@ -285,53 +285,21 @@ namespace Mer
 			}
 			return _make_int_obj(cnt);
 		}
-		Mem::Object _input_int(const std::vector<Mem::Object>& args)
-		{
-			int obj = 0;
-			if (input_buf.empty())
-				std::cin >> obj;
-			else
-				my_stringstream >> obj;
-			return std::make_shared<Mem::Int>(obj);
-		}
+
 		Mem::Object _input_char(const std::vector<Mem::Object>& args)
 		{
 			char obj;
 			if (input_buf.empty())
-				std::cin >> obj;
+				std::cin >> std::noskipws>>obj;
 			else
-				my_stringstream >> obj;
+				my_stringstream >>std::noskipws>> obj;
 			return std::make_shared<Mem::Char>(obj);
 		}
-		Mem::Object _get_line(const std::vector<Mem::Object>& args)
+		Mem::Object _put_char(const std::vector<Mem::Object>& args)
 		{
-			std::string obj;
-			if (input_buf.empty())
-				std::getline(std::cin, obj);
-			else
-				std::getline(my_stringstream, obj);
-			return std::make_shared<Mem::String>(obj);
-
-		}
-		Mem::Object _input_real(const std::vector<Mem::Object>& args)
-		{
-
-			double obj = 0;
-			if (input_buf.empty())
-				std::cin >> obj;
-			else
-				my_stringstream >> obj;
-			return std::make_shared<Mem::Double>(obj);
-		}
-		Mem::Object _input_string(const std::vector<Mem::Object>& args)
-		{
-
-			std::string obj = "";
-			if (input_buf.empty())
-				std::cin >> obj;
-			else
-				my_stringstream >> obj;
-			return std::make_shared<Mem::String>(obj);
+			char obj=*(args[0]->get_raw_data());
+			print_str(obj);
+			return nullptr;
 		}
 	}
 
@@ -367,11 +335,8 @@ namespace Mer
 		//======================================================
 		root_namespace->set_new_func("printf", cout);
 		root_namespace->set_new_func("scanf", _mer_scanf);
-		_register_internal_function("input_int", Mem::INT, {}, _input_int, mstd);
-		_register_internal_function("input_char", Mem::CHAR, {}, _input_char, mstd);
-		_register_internal_function("input_string", Mem::STRING, {}, _input_string, mstd);
-		_register_internal_function("input_real", Mem::DOUBLE, {}, _input_real, mstd);
-		_register_internal_function("getline", Mem::STRING, {}, _get_line, mstd);
+		_register_internal_function("getchar", Mem::CHAR, {}, _input_char, root_namespace);
+		_register_internal_function("putchar", Mem::BVOID, {Mem::CHAR}, _input_char, root_namespace);
 
 	}
 }

@@ -491,7 +491,7 @@ namespace Mer
 			{
 				return BasicType::CHAR;
 			}
-			size_t length()const override { return sizeof(char); }
+			size_t length()const override { return 1; }
 			char *get_raw_data() override {
 				return value;
 			}
