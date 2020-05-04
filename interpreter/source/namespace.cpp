@@ -39,6 +39,10 @@ void Mer::Namespace::set_new_func(const std::string& name, FunctionBase* func)
 		sl_table->push_glo(name,result);
 	}
 	auto recorder = static_cast<FuncIdRecorder*>(result);
+	if (recorder->functions.find(func->param_types) != recorder->functions.end())
+	{
+		throw Error("function " + func->to_string() + " redefined");
+	}
 	if (func->is_check_type() == false)
 	{
 		recorder->dnt_check = true;

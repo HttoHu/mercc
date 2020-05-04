@@ -181,12 +181,14 @@ void Mer::Parser::build_function(size_t rtype,std::string name)
 			Function* temp = static_cast<Function*>(func);
 
 			Mer::global_stmt() = false;
+
 			_pcs.push_back(temp->pc);
 			current_ins_table = &(temp->stmts);
 			// off get the var_size of the function
 			build_function_block();
 			// count the block size;
 			temp->off = mem.function_block_size;
+
 			mem.reset_func_block_size();
 
 			_pcs.pop_back();
@@ -352,9 +354,8 @@ bool Mer::InitKey::operator<(const InitKey& init_key) const
 
 bool Mer::compare_param_feature(const std::vector<type_code_index>& p1, const std::vector<type_code_index>& p2)
 {
-	if (p1.size() != p2.size()) {
+	if (p1.size() != p2.size()) 
 		return p1.size() < p2.size();
-	}
 	auto sz = p1.size();
 	for (std::vector<type_code_index>::size_type i = 0; i < sz; i++)
 	{
