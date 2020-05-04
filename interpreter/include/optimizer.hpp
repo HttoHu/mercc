@@ -24,11 +24,17 @@
 */
 #pragma once
 #include <iostream>
+#include <memory>
 #include "parser_node.hpp"
 
 namespace Mer
 {
 	enum Tag;
+	namespace Mem
+	{
+		class Value;
+		using Object = std::shared_ptr<Value>;
+	}
 	namespace optimizer
 	{
 		extern std::map<Mer::Tag, Mem::Object(*) (const Mem::Object&, const Mem::Object&)> op_table;

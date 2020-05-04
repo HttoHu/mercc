@@ -1,4 +1,4 @@
-#include "clib/cstring.hpp"
+#include "../include/clib/cstring.hpp"
 #include "../include/type.hpp"
 #include "../include/function.hpp"
 #include "../include/namespace.hpp"
@@ -21,6 +21,7 @@ namespace Mer {
 			}
 			pos++;
 		}
+		return std::make_shared<Mem::Int>(ret);
 	}
 
 	// the first args type's len should equal to the second one's len.

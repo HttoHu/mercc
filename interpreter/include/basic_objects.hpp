@@ -459,6 +459,8 @@ namespace Mer
 		public:
 			Pointer(size_t s) :add(s) {}
 			Pointer(Object _obj)=delete;
+			char *get_raw_data()override { return (char*)&add; }
+			size_t length()const override { return sizeof(size_t); }
 			Mem::Object operator=(Object v)override;
 			Mem::Object operator==(Object v)override;
 			Mem::Object operator!=(Object v)override;
