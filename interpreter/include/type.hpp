@@ -24,13 +24,13 @@
 */
 #pragma once
 using type_code_index = int;
+#include "lexer.hpp"
 #include <set>
 #include <map>
 #include <string>
 namespace Mer
 {
 	class Token;
-	enum Tag;
 	class FunctionBase;
 	extern std::map<type_code_index, std::string> type_name_mapping;
 	namespace Mem

@@ -41,6 +41,7 @@
 #include "../include/compound_box.hpp"
 #include "../include/word_record.hpp"
 #include <fstream>
+#include <cstring>
 #ifdef USING_CXX17
 #include <filesystem>
 #endif
@@ -69,7 +70,7 @@ namespace Mer
 		void format_print(const char* m, const T & info)
 		{
 			static char buf[50];
-			sprintf_s(buf, m, info);
+			sprintf(buf, m, info);
 			int len = strlen(buf);
 #ifndef DISABLEIO
 			printf("%s",buf);

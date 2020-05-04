@@ -591,6 +591,7 @@ namespace Mer
 			template<typename T>
 			AnyObj& operator==(T&& t)noexcept {
 				obj = t;
+				return *this;
 			}
 			template<typename T>
 			T& cast() {

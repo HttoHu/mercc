@@ -77,7 +77,7 @@ namespace Mer
 			return "<" + TagStr[token_type] + ">";
 		}
 		virtual ~Token() {}
-	private:
+	protected:
 		Tag token_type;
 	};
 	extern std::map<std::string, Token*>BasicToken;
@@ -137,10 +137,6 @@ namespace Mer
 	class Literal :public Token {
 	public:
 		Literal(T v, Tag t) :Token(t), value(v) {}
-		static T get_value(Token* tok) {
-			if (tok->check(token_type))
-				throw  Error("type-convert failed");
-		}
 		std::string to_string()const override {
 			return std::to_string(value);
 		}
