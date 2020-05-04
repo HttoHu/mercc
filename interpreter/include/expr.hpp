@@ -199,6 +199,7 @@ namespace Mer
 		ParserNode* tree;
 		type_code_index  expr_type=0;
 		ParserNode* assign();
+		ParserNode* conditional_expr();
 		ParserNode* and_or();
 		ParserNode* expr();
 		ParserNode* nexpr();

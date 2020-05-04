@@ -667,4 +667,11 @@ namespace Mer
 				throw Error("invalid array init list");
 		}
 	}
+	Mem::Object ConditionalOperator::execute()
+	{
+		bool cond = std::static_pointer_cast<Mem::Bool>(condition->execute()->Convert(Mem::BOOL))->_value();
+		if (cond)
+			return true_expr->execute();
+		return false_expr->execute();
+	}
 }

@@ -100,6 +100,19 @@ namespace Mer
 		std::vector<UptrPNode> exprs;
 		type_code_index type;
 	};
+	class ConditionalOperator :public ParserNode
+	{
+	public:
+		ConditionalOperator(ParserNode *a, ParserNode* b, ParserNode* c) :condition(a), true_expr(b), false_expr(c) {}
+		ParserNode* clone()override {
+			return new ConditionalOperator(condition->clone(), true_expr->clone(), false_expr->clone());
+		}
+		Mem::Object execute()override;
+	private:
+		ParserNode* condition;
+		ParserNode* true_expr;
+		ParserNode *false_expr;
+	};
 	//create global variable
 	class GloVarDecl :public ParserNode
 	{

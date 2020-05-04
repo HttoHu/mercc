@@ -372,7 +372,7 @@ namespace Mer
 	}
 	Mem::Object IfTrueToAOrB::execute()
 	{
-		if (std::static_pointer_cast<Mem::Bool>(expr->execute())->_value())
+		if (std::static_pointer_cast<Mem::Bool>(expr->execute()->Convert(Mem::BOOL))->_value())
 			*pc = *true_tag - 1;
 		else
 			*pc = *false_tag - 1;
