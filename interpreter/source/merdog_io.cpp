@@ -70,7 +70,7 @@ namespace Mer
 		void format_print(const char* m, const T & info)
 		{
 			static char buf[50];
-			sprintf(buf, m, info);
+			sprintf_s(buf, m, info);
 			int len = strlen(buf);
 #ifndef DISABLEIO
 			printf("%s",buf);

@@ -51,6 +51,11 @@ namespace Mer
 			Mem::Object le(const Mem::Object& lhs, const Mem::Object& rhs) {
 				return lhs->operator<=(rhs);
 			}
+			Mem::Object int_mod(const Mem::Object& lhs, const Mem::Object& rhs)
+			{
+				return std::make_shared<Mem::Int>(*(int*)lhs->get_raw_data() % *(int*)(rhs->get_raw_data()));
+			}
+
 			Mem::Object get_neg(const Mem::Object &v) {
 				return v->get_negation();
 			}
@@ -83,7 +88,8 @@ namespace Mer
 		}
 		std::map<Mer::Tag, Mem::Object(*) (const Mem::Object&, const Mem::Object&)> op_table{
 			{Mer::PLUS,add},{MINUS,sub},{MUL,mul},{DIV,div},{SADD,sadd},{SDIV,sdiv},{SADD,sadd},
-			{SSUB,ssub},{ASSIGN,assign},{EQ,equal},{NE,not_equal},{GT,gt},{GE,ge},{LT,lt},{LE,le}
+			{SSUB,ssub},{ASSIGN,assign},{EQ,equal},{NE,not_equal},{GT,gt},{GE,ge},{LT,lt},{LE,le},
+			{MOD,int_mod}
 		};
 		std::map<Mer::Tag, Mem::Object(*)(const Mem::Object&)> unary_op_table{
 			{Mer::MINUS,get_neg},{Mer::PLUS,trans},{NOT,get_neg},{INC,int_front_inc},{DEC,int_front_dec},
@@ -102,6 +108,9 @@ namespace Mer
 				Mem::Object ret;
 				switch (tok->get_tag())
 				{
+				case MOD:
+					ret = std::make_shared<Mem::Int>(*(int*)left_v->get_raw_data() % *(int*)right_v->get_raw_data());
+					break;
 				case SADD:
 					ret = left_v->operator+=(right_v);
 					break;

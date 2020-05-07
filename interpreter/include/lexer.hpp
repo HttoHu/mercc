@@ -44,7 +44,7 @@ namespace Mer
 		//DO not Change relative position of inc, dec,_binc,_bdec,
 		INC,_BINC,DEC,_BDEC,
 		EQ, NE, GT, GE, LT, LE,
-		PLUS, MINUS, MUL, DIV,
+		PLUS, MINUS, MUL, DIV,MOD,
 		IMPORT, NAMESPACE, STRUCT,
 		PRINT, CAST,
 		GET_ADD,PTRVISIT,

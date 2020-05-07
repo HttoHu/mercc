@@ -131,7 +131,8 @@ namespace Mer {
 		{ ID,"ID" },{ INTEGER,"INTEGER" },{ REAL,"REAL" } ,{ FUNCTION,"FUNCTION" },{ RETURN,"RETURN" },
 		{ IF,"IF" },{ ELSE_IF,"ELSE_IF" },{ ELSE,"ELSE" },{ WHILE,"WHILE" },{ DO,"DO" } ,{ FOR,"FOR" },{ BREAK,"BREAK" },{ CONTINUE,"CONTINUE" },{ SWITCH,"SWITCH" },
 		{ INTEGER_DECL,"INTEGER_DECL" },{ REAL_DECL,"REAL_DECL" },{ STRING_DECL,"STRING_DECL" },{ BOOL_DECL,"BOOL_DECL" },{ VOID_DECL,"VOID_DECL" },{ CHAR_DECL,"CHAR_DECL" },
-		{ PLUS,"PLUS" },{ MINUS,"MINUS" },{ MUL,"MUL" },{ DIV,"DIV" },{ MAKE,"make" },
+		{ PLUS,"PLUS" },{ MINUS,"MINUS" },{ MUL,"MUL" },{ DIV,"DIV" },{MOD,"MOD"},
+		{ MAKE,"make" },
 		{ GE,"GE" },{ GT,"GT" },{ LE,"LE" },{ LT,"LT" },{ EQ,"EQ" },{ NE,"NE" },
 		{ AND,"AND" },{ OR,"OR" },{ NOT,"NOT" },{ GET_ADD,"GET_ADD" },
 		{ LPAREN,"LPAREN" },{ RPAREN,"RPAREN" },{ LSB,"LSB" },{ RSB,"RSB" },
@@ -143,7 +144,8 @@ namespace Mer {
 	TokenMap	BasicToken{
 		{ "#",new Token(SHARP) },
 		{"++",new Token(INC)},{"--",new Token(DEC)},
-		{ "+",new Token(PLUS) },{ "-",new Token(MINUS) },{ "*",new Token(MUL) },{ "/",new Token(DIV) },{ "=",new Token(ASSIGN) },
+		{ "+",new Token(PLUS) },{ "-",new Token(MINUS) },{ "*",new Token(MUL) },{ "/",new Token(DIV) },{"%",new Token (MOD)},
+		{ "=",new Token(ASSIGN) },
 		{ "+=",new Token(SADD) },{ "-=",new Token(SSUB) },{ "*=",new Token(SMUL) },{ "/=",new Token(SDIV) },
 		{ "<",new Token(LT) },{ "<=",new Token(LE) },{ ">",new Token(GT) },{ ">=",new Token(GE) },{ "==",new Token(EQ) },
 		{ "!=",new Token(NE) },{ "!",new Token(NOT) },{ "&&",new Token(AND) },{ "||",new Token(OR) },{ ":",new Token(COLON) },
@@ -380,6 +382,7 @@ void Mer::build_token_stream(const std::string& content) {
 			token_stream.push_back(BasicToken[str]);
 			break;
 		}
+		case '%':
 		case '?':
 		case ';':
 		case ':':

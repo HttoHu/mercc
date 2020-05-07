@@ -112,7 +112,7 @@ namespace Mer
 	ParserNode* Expr::term()
 	{
 		auto result = member_visit();
-		while (token_stream.this_token()->get_tag() == MUL || token_stream.this_token()->get_tag() == DIV)
+		while (token_stream.this_tag() == MUL || token_stream.this_tag() == DIV || token_stream.this_tag()==MOD)
 		{
 			auto tok = token_stream.this_token();
 			token_stream.next();
