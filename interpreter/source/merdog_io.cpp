@@ -303,6 +303,35 @@ namespace Mer
 			print_str(obj);
 			return nullptr;
 		}
+
+		Mem::Object mgets(const std::vector<Mem::Object>& args)
+		{
+			size_t dest_pos = std::static_pointer_cast<Mem::Pointer>(args[0])->get_value();
+			std::string str;
+			std::getline(std::cin, str);
+			for (auto a : str)
+			{
+				*(Mer::mem[dest_pos++]->get_raw_data()) = a;
+			}
+			return args[0]->clone();
+		}
+
+		Mem::Object mputs(const std::vector<Mem::Object>& args)
+		{
+			size_t dest_pos = std::static_pointer_cast<Mem::Pointer>(args[0])->get_value();
+			while (true)
+			{
+				char cur = *mem[dest_pos]->get_raw_data();
+				if (cur == '\0')
+				{
+					putchar('\n');
+					break;
+				}
+				putchar(cur);
+				dest_pos++;
+			}
+			return std::make_shared<Mem::Int>(1);
+		}
 	}
 
 	Namespace* mstd = new Namespace(nullptr);
@@ -338,7 +367,10 @@ namespace Mer
 		root_namespace->set_new_func("printf", cout);
 		root_namespace->set_new_func("scanf", _mer_scanf);
 		_register_internal_function("getchar", Mem::CHAR, {}, _input_char, root_namespace);
-		_register_internal_function("putchar", Mem::BVOID, {Mem::CHAR}, _input_char, root_namespace);
+		_register_internal_function("putchar", Mem::BVOID, { Mem::CHAR }, _put_char, root_namespace);
+		_register_internal_function("gets", Mem::CHAR+1, {Mem::CHAR+1}, mgets, root_namespace);
+		_register_internal_function("puts", Mem::INT, { Mem::CHAR + 1 }, mputs, root_namespace);
+
 
 	}
 }

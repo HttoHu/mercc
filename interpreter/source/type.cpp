@@ -124,9 +124,8 @@ namespace Mer
 					token_stream.back();
 					return get_ctype_code();
 				}
-				if (info == nullptr)
-					throw Error("id: " + Id::get_value(token_stream.this_token()) + "no found");
 				ret=info->get_type();
+				return ret;
 			}
 			default:
 				throw Error(token_stream.this_token()->to_string() + " unknown type ");
