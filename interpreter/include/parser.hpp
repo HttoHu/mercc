@@ -179,9 +179,10 @@ namespace Mer
 	};
 	namespace Parser
 	{
-		std::pair<std::vector<size_t> ,std::vector<ParserNode*>> linearized_array();
+		// first the count of each children list.
+		std::pair<std::vector<size_t> ,std::vector<ParserNode*>> linearized_array(size_t element_type);
 		// DFS 
-		ArrayInitList* build_array_initlist_tree();
+		ArrayInitList* build_array_initlist_tree(size_t ele_type_code);
 		void program();
 		ParserNode* statement();
 		ParserNode* var_decl();

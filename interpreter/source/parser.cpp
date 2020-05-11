@@ -90,11 +90,11 @@ namespace Mer
 	{
 		return ret->clone();
 	}
-	std::pair<std::vector<size_t>, std::vector<ParserNode*>> Parser::linearized_array()
+	std::pair<std::vector<size_t>, std::vector<ParserNode*>> Parser::linearized_array(size_t element_type)
 	{
 		std::vector<size_t> ret_first;
 		std::vector<ParserNode*> ret_second;
-		auto arr_init_list = build_array_initlist_tree();
+		auto arr_init_list = build_array_initlist_tree(element_type);
 
 		// bfs to build ret_second
 		std::deque<ArrayInitList*> q;
@@ -122,7 +122,7 @@ namespace Mer
 		return { ret_first,ret_second };
 	}
 
-	ArrayInitList* Parser::build_array_initlist_tree()
+	ArrayInitList* Parser::build_array_initlist_tree(size_t ele_type_code)
 	{
 		
 		std::vector<ArrayInitList*> children;
@@ -142,16 +142,16 @@ namespace Mer
 		token_stream.match(BEGIN);
 
 		while (token_stream.this_tag() == BEGIN) {
-			children.push_back(build_array_initlist_tree());
+			children.push_back(build_array_initlist_tree(ele_type_code));
 			if (token_stream.this_tag() == END)
 				break;
 			token_stream.match(COMMA);
 		}
 		while (token_stream.this_tag() != END) {
-			leaves.push_back(Expr().root());
+			leaves.push_back(Expr(ele_type_code).root());
 			while (token_stream.this_tag() != END) {
 				token_stream.match(COMMA);
-				leaves.push_back(Expr().root());
+				leaves.push_back(Expr(ele_type_code).root());
 			}
 		}
 		token_stream.match(END);
@@ -254,7 +254,6 @@ namespace Mer
 				token_stream.back();
 			}
 		}
-
 		if (pointer_type)
 		{
 			token_stream.back();
@@ -392,7 +391,7 @@ namespace Mer
 			if (name_part.is_auto_array())
 			{
 				token_stream.match(ASSIGN);
-				auto right_value = Parser::linearized_array();
+				auto right_value = Parser::linearized_array(t);
 				array_indexs = right_value.first;
 				size = right_value.second.size() + 1;
 				// set initlist 
@@ -409,7 +408,7 @@ namespace Mer
 				if (token_stream.this_tag() == ASSIGN)
 				{
 					token_stream.match(ASSIGN);
-					auto right_value = Parser::linearized_array();
+					auto right_value = Parser::linearized_array(t);
 					/*
 						One-dimensional array can be init by one element for example:
 					*/

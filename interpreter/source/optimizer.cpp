@@ -171,6 +171,14 @@ namespace Mer
 				switch (tok->get_tag())
 				{
 				case NOT:
+					if (left->get_type() != Mem::BOOL)
+						if (Mem::type_convertible(left->get_type(), Mem::BOOL))
+						{
+							new LConV(std::static_pointer_cast<Mem::Bool>(left->execute()->Convert(Mem::BOOL))->get_negation(),Mem::BOOL);
+						}
+						else
+							throw Error("type " + Mem::type_to_string(Mem::BasicType(left->get_type())) + " can't convert to bool");
+					break;
 				case MINUS:
 				{
 					auto tmp = left->execute();

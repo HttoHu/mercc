@@ -1,0 +1,3 @@
+OK. fixed char arr[100]={0} <=> int arr[100]={0} bug
+OK. !(0)= 0 bug
+enum.

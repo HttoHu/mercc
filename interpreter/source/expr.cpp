@@ -322,6 +322,11 @@ namespace Mer
 		auto result = optimizer::unary_op_table.find(t);
 		if (result == optimizer::unary_op_table.end())
 			throw Error(std::to_string(t) + " invalid operation");
+		if (t == NOT && e->get_type() != Mem::BOOL)
+			if (Mem::type_convertible(e->get_type(), Mem::BOOL))
+				expr = new Cast(expr, Mem::BOOL);
+			else
+				throw Error("type " + Mem::type_to_string(Mem::BasicType(e->get_type())) + " can't convert to bool");
 		op = result->second;
 	}
 
