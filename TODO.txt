@@ -1,3 +1,11 @@
-OK. fixed char arr[100]={0} <=> int arr[100]={0} bug
+﻿OK. fixed char arr[100]={0} <=> int arr[100]={0} bug
 OK. !(0)= 0 bug
-enum.
+
+1. enum. => int. 
+6. define
+2. struct 升级
+3. 位运算
+4. string库,stdio库
+5. math库,stdlib库
+6. 写完了就发布圈钱。
+

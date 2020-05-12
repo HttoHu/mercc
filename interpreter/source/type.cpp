@@ -124,6 +124,8 @@ namespace Mer
 					token_stream.back();
 					return get_ctype_code();
 				}
+				else if (info->es == ESymbol::SENUM)
+					return Mem::INT;
 				ret=info->get_type();
 				return ret;
 			}

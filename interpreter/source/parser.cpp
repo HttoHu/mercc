@@ -176,6 +176,9 @@ namespace Mer
 		{
 			switch (token_stream.this_tag())
 			{
+			case ENUM:
+				build_enum();
+				break;
 			case IMPORT:
 			{
 				token_stream.match(IMPORT);

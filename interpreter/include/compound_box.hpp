@@ -146,6 +146,7 @@ namespace Mer
 	extern std::map<type_code_index, std::map<std::string, FunctionBase*>> member_function_table;
 	// to build the struct , records different information and push the struct to the ustructure_map
 	void build_ustructure();
+	void build_enum();
 	extern std::map<type_code_index, std::string> type_name_mapping;
 	/*
 		MemberVar need a Object to execute operator[] , which obtain from parents_vec.push_back()

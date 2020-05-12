@@ -84,6 +84,51 @@ namespace Mer
 		token_stream.match(END);
 		token_stream.match(SEMI);
 	}
+	//(ID=CONST_INT,|})*
+	/*
+	enum  ID{
+		TagOne=NUM,
+	};
+	*/
+	void build_enum()
+	{
+		token_stream.match(ENUM);
+		std::string enum_type_name = Id::get_value(token_stream.this_token());
+		tsymbol_table->push(enum_type_name, new WordRecorder(ESymbol::SENUM,Mem::INT));
+		token_stream.next();
+		token_stream.match(BEGIN);
+		int cur_enumerate = 0;
+		while (true)
+		{
+			std::string cur_enumerate_name= Id::get_value(token_stream.this_token());
+			int this_enumerate = cur_enumerate;
+			token_stream.next();
+			if (token_stream.this_tag() == ASSIGN)
+			{
+				token_stream.next();
+				auto tok = token_stream.this_token();
+				if (tok->get_tag() == TTRUE)
+					this_enumerate = 1;
+				else if (tok->get_tag() == TFALSE)
+					this_enumerate = 0;
+				else if (tok->get_tag() == INTEGER)
+					this_enumerate = Mer::Integer::get_value(tok);
+				else
+					throw Error("token " + tok->to_string() + " can not be an enumerator");
+				token_stream.next();
+			}
+			
+			cur_enumerate = this_enumerate + 1;
+			auto this_symbol = new WordRecorder(ESymbol::SENUM_MEMBER, Mem::INT);
+			this_symbol->count = this_enumerate;
+			tsymbol_table->push(cur_enumerate_name, this_symbol);
+			if (token_stream.this_tag() == COMMA)
+				token_stream.next();
+			else
+				break;
+		}
+		token_stream.match(END); token_stream.match(SEMI);
+	}
 
 
 	UStructure* find_ustructure_t(type_code_index type)

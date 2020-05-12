@@ -129,8 +129,12 @@ Mer::ParserNode* Mer::Parser::parse_id()
 		token_stream.match(RPAREN);
 		return new Cast(expr, Mem::get_type_code(id));
 	}
+	case ESymbol::SENUM_MEMBER:
+		token_stream.next();
+		return new LConV(std::make_shared<Mem::Int>(result->count), Mem::INT);
 	case ESymbol::SGVAR:
 		return parse_glo(result);
+	case ESymbol::SENUM:
 	case ESymbol::SSTRUCTURE:
 	case ESymbol::SCONTAINER:
 		return var_decl();

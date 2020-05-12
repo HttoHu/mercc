@@ -152,7 +152,7 @@ namespace Mer {
 		{ ",",new Token(COMMA) },{ ";",new Token(SEMI) },{ ".",new Token(DOT) },{ "&",new Token(GET_ADD) },{ "->",new Token(PTRVISIT) },
 		{ "[",new Token(LSB) },{ "]",new Token(RSB) },{ "(",new Token(LPAREN) },{ ")",new Token(RPAREN) },
 		{ "{",new Token(BEGIN) },{ "}",new Token(END) },{"?",new Token(QUE)},
-		{ "include",new Token(INCLUDE) },{ "namespace",new Token(NAMESPACE) },{ "struct",new Token(STRUCT) },
+		{ "include",new Token(INCLUDE) },{ "namespace",new Token(NAMESPACE) },{ "struct",new Token(STRUCT) },{"enum",new Token(ENUM)},
 		{ "if",new Token(IF) },{ "elif",new Token(ELSE_IF) },{ "else",new Token(ELSE) },{ "sizeof",new Token(SIZEOF) },
 		{ "while",new Token(WHILE) },{ "break",new Token(BREAK) },{ "for",new Token(FOR) },{ "do",new Token(DO) },{ "switch",new Token(SWITCH) },{ "case",new Token(CASE) },
 		{ "continue",new Token(CONTINUE) },{ "default",new Token(DEFAULT) },
