@@ -120,9 +120,11 @@ namespace Mer
 		the initializer of a class
 	*/
 	struct WordRecorder;
+	template<typename ARR_TYPE>
+	ParserNode* get_array_bias(Mer::WordRecorder* var_info);
+	ParserNode* _make_l_conv(int n);
 	namespace Parser
 	{
-
 		ParserNode* parse_glo(WordRecorder* var_info);
 		ParserNode *parse_id();
 		ParserNode *parse_var(WordRecorder* var_info);

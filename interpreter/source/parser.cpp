@@ -463,7 +463,12 @@ namespace Mer
 			}
 			else
 			{
-				expr = new DefaultInitList(type_code);
+				// if the size is 1, it will be regarded as a single variable.
+				this->size = 1+result->get_size();
+				auto init_lists = new InitList();
+				for (auto a : result->init_vec)
+					init_lists->exprs().push_back(new LConV(a->clone(), a->get_type()));
+				expr = init_lists;
 			}
 			return;
 		}
@@ -560,7 +565,7 @@ namespace Mer
 
 	void LocalVarDecl::process_unit(VarDeclUnit* a, size_t c_pos)
 	{
-		if (a->arr())
+		if (a->get_size()!=1)
 		{
 			std::vector<ParserNode*> arr;
 			auto exprs_info = a->get_expr();

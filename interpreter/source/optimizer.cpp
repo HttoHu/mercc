@@ -196,9 +196,9 @@ namespace Mer
 			}
 			return new UnaryOp(tok->get_tag(), left);
 		}
-		ParserNode* optimize_array_subscript(ParserNode* arr, ParserNode* subscript)
+		ParserNode* optimize_array_subscript(ParserNode* arr, ParserNode* subscript,type_code_index default_type)
 		{
-			type_code_index type = arr->get_type();
+			type_code_index type=default_type?default_type:arr->get_type();
 			if (typeid(*arr) == typeid(Variable) && static_cast<Variable*>(arr)->arr())
 			{
 				int index = 0;
@@ -220,7 +220,7 @@ namespace Mer
 					return ret;
 				}
 			}
-			return new SubScript(arr, subscript);
+			return new SubScript(arr, subscript,type);
 		}
 
 	}

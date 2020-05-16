@@ -47,8 +47,8 @@ namespace Mer
 	{
 	public:
 		using SIM=std::map<std::string, int>;
-		// add new member
-		void push_new_children(size_t t, std::string id_name);
+		// add a new array member/or member;
+		void push_new_children(size_t t, std::string id_name, size_t count=1);
 		// first: member type second: member pos
 		std::pair<type_code_index, size_t > get_member_info(std::string member_name);
 		std::vector<Mem::Object> init();
@@ -58,11 +58,12 @@ namespace Mer
 		std::map<std::string, type_code_index> STMapping;
 		void push_init(Mem::Object obj) { init_vec.push_back(obj); }
 		void print();
+		int get_size()const { return be; }
 		WordRecorder* find_id_info(const std::string &id);
 		std::vector<Mem::Object> init_vec;
 		std::map<std::string, WordRecorder*> structure_member_table;
 	private:
-
+		friend void _structure_member_def(type_code_index var_type, std::vector<Mem::Object> & init, UStructure * structure_content);
 		friend void build_ustructure();
 		// the index to new member is used in build phase. 
 		int be = 0;
@@ -147,6 +148,8 @@ namespace Mer
 	// to build the struct , records different information and push the struct to the ustructure_map
 	void build_ustructure();
 	void build_enum();
+	bool is_a_structure_type(type_code_index t);
+	std::pair<type_code_index, ParserNode *> count_bias(UStructure *us);
 	extern std::map<type_code_index, std::string> type_name_mapping;
 	/*
 		MemberVar need a Object to execute operator[] , which obtain from parents_vec.push_back()

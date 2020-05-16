@@ -95,6 +95,7 @@ namespace Mer
 	{
 	public:
 		SubScript(ParserNode* l, ParserNode* s);
+		SubScript(ParserNode* l, ParserNode* s,type_code_index _ty);
 		type_code_index get_type()override { return type; }
 		Mem::Object execute()override;
 		ParserNode* clone()override {

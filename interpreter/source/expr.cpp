@@ -14,6 +14,8 @@
 namespace Mer
 {
 	extern size_t current_function_rety;
+
+
 	Expr::Expr(type_code_index t) :is_bool(false), expr_type(t) {
 		tree = assign();
 		if (expr_type == 0 && tree->get_type() != 0)
@@ -126,37 +128,21 @@ namespace Mer
 		auto result = subscript();
 		while (token_stream.this_token()->get_tag() == DOT || token_stream.this_token()->get_tag() == PTRVISIT)
 		{
+
 			auto tok = token_stream.this_token();
 			token_stream.next();
-			auto member_id = token_stream.this_token();
-			token_stream.match(ID);
 			type_code_index type_code = result->get_type();
 			// get rid of the pointness.
 			type_code_index raw_type = type_code + (type_code % 2 - 1);
 			// pointer which may points a struct
 			if (tok->get_tag() == PTRVISIT)
 				result = new RmRef(result,type_code);
-			// member function call
-			if (token_stream.this_tag() == LPAREN)
-			{
-				structure_parent_stack.push_back(result);
-				result = nullptr;
-				// get type code
-				auto func = member_function_table[raw_type].find(Id::get_value(member_id));
-				if (func == member_function_table[raw_type].end())
-				{ 
-					throw Error(" member functioon " + Id::get_value(member_id) + " no found");
-				}
-				result= Parser::parse_call_by_function(func->second);
-				structure_parent_stack.pop_back();
-				continue;
-			}
 			// find struct info
-			auto bias = type_code+ (type_code % 2 - 1);
-			auto ustruct = find_ustructure_t(bias);
+			auto ustruct = find_ustructure_t(raw_type);
 			// find member index and type;
-			auto seeker = ustruct->get_member_info(Id::get_value(member_id));
-			result=new Index(result, seeker.second, seeker.first);
+			auto bias = count_bias(ustruct);
+			
+			return optimizer::optimize_array_subscript(result, bias.second,bias.first);
 		}
 		return result;
 	}
@@ -572,6 +558,9 @@ namespace Mer
 		}
 		else
 			type = l->get_type();
+	}
+	SubScript::SubScript(ParserNode * l, ParserNode * s, type_code_index _ty) :left(l), subscr(s),type(_ty)
+	{
 	}
 	Mem::Object SubScript::execute()
 	{

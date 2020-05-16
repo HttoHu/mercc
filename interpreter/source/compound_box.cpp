@@ -7,6 +7,7 @@
 #include "../include/memory.hpp"
 #include "../include/word_record.hpp"
 #include "../include/namespace.hpp"
+#include "../include/optimizer.hpp"
 using namespace Mer;
 namespace Mer
 {
@@ -14,11 +15,57 @@ namespace Mer
 	std::map<type_code_index, std::string> type_name_mapping;
 	std::map<type_code_index, std::map<std::string, FunctionBase*>> member_function_table;
 	std::vector<Mem::Object> parents_vec;
+	// the impl of the member variable of structure parser.
+	void _structure_member_def(type_code_index var_type, std::vector<Mem::Object> & init, UStructure * structure_content) {
+		std::vector<Mer::VarDeclUnit> member_units;
+
+		while (true)
+		{
+			member_units.push_back(VarDeclUnit(var_type));
+			if (token_stream.this_tag() == COMMA)
+				token_stream.match(COMMA);
+			else
+				break;
+		}
+		for (auto &unit : member_units)
+		{
+			WordRecorder* recorder = nullptr;
+			int len = unit.get_size();
+			if (unit.arr())
+			{
+				len--;
+				std::vector<ParserNode*> arr;
+				auto exprs_info = unit.get_expr();
+				if (typeid(*exprs_info) == typeid(InitList))
+					arr = static_cast<InitList*>(unit.get_expr())->exprs();
+				else
+					arr = static_cast<EmptyList*>(unit.get_expr())->exprs();
+				for (auto & it : arr)
+					// it should be a const-literal, if you init the member with a var, the execute() will crash and print some error infomation which points to
+					// the place of the error.
+					init.push_back(it->execute());
+				// two means it it an array.
+				recorder = new GArrayRecorder(var_type, structure_content->be, unit.array_indexs);
+
+			}
+			else
+			{
+				init.push_back(unit.get_expr()->execute());
+				recorder = new GVarIdRecorder(var_type, structure_content->be);
+			}
+			std::string mem_name = Id::get_value(unit.get_id());
+			structure_content->push_new_children(var_type, mem_name, len);
+			structure_content->structure_member_table.insert({ mem_name,recorder });
+		}
+	}
+
 	//OK
 	void build_ustructure()
 	{
 		token_stream.match(STRUCT);
 		std::string name = Id::get_value(token_stream.this_token());
+		if (ustructure_map.count(name))
+			throw Error("struct " + name + " redefined");
 		// you need to record the type info of the struct imediately, or you can't define the pointer of self-type;
 		Mem::type_counter += 2;
 		Mer::this_namespace->sl_table->push(name, new WordRecorder(ESymbol::SSTRUCTURE, Mem::type_counter));
@@ -29,78 +76,31 @@ namespace Mer
 		ustructure_map.insert({ name,us });
 		Mem::type_index.insert({ name,Mem::type_counter });
 		type_name_mapping.insert({ Mem::type_counter,name });
-
 		Mem::type_map.insert({ Mem::type_counter ,new Mem::Type(name,Mem::type_counter,{Mem::type_counter}) });
 		tsymbol_table->new_block();
+		//parsing
 		while (token_stream.this_tag() != END)
 		{
-			// parse member function;
-			if (token_stream.this_tag() == FUNCTION)
-			{
-				std::pair<std::string, Function*> tmp = Parser::_build_function();
-				// push function 
-				member_function_table[Mem::type_counter].insert(tmp); 
-				// record function id
-				auto recorder = new FuncIdRecorder(tmp.second);
-				us->structure_member_table.insert({ tmp.first,recorder});
-				this_namespace->sl_table->push(tmp.first, recorder);
-				continue;
-			}
 			size_t type = Mem::get_type_code();
-			// when its type is a pointer
-			if (token_stream.this_tag() == MUL)
-			{
-				token_stream.match(MUL);
-				type++;
-			}
-			// record
-			std::string mem_name = Id::get_value(token_stream.this_token());
-			us->push_new_children(type, mem_name);
-			auto id_recorder = new MVarRecorder(type, (size_t)(us->be) - 1u);
-			tsymbol_table->push(mem_name, id_recorder);
-			us->structure_member_table.insert({ mem_name,id_recorder });
-
-			token_stream.match(ID);
-			// process init_value
-			if (token_stream.this_tag() == ASSIGN)
-			{
-				token_stream.match(ASSIGN);
-				auto expr = Expr(type).root();
-				us->push_init(expr->execute());
-				if (expr->get_type() != type)
-				{
-					delete expr;
-					throw Error("struct member type is not matched with init value");
-				}
-				delete expr;
-			}
-			else
-			{
-				us->push_init(Mem::create_var_t(type));
-			}
+			_structure_member_def(type, us->init_vec, us);
 			token_stream.match(SEMI);
 		}
 		tsymbol_table->end_block();
 		token_stream.match(END);
 		token_stream.match(SEMI);
 	}
-	//(ID=CONST_INT,|})*
-	/*
-	enum  ID{
-		TagOne=NUM,
-	};
-	*/
+
 	void build_enum()
 	{
 		token_stream.match(ENUM);
 		std::string enum_type_name = Id::get_value(token_stream.this_token());
-		tsymbol_table->push(enum_type_name, new WordRecorder(ESymbol::SENUM,Mem::INT));
+		tsymbol_table->push(enum_type_name, new WordRecorder(ESymbol::SENUM, Mem::INT));
 		token_stream.next();
 		token_stream.match(BEGIN);
 		int cur_enumerate = 0;
 		while (true)
 		{
-			std::string cur_enumerate_name= Id::get_value(token_stream.this_token());
+			std::string cur_enumerate_name = Id::get_value(token_stream.this_token());
 			int this_enumerate = cur_enumerate;
 			token_stream.next();
 			if (token_stream.this_tag() == ASSIGN)
@@ -117,7 +117,7 @@ namespace Mer
 					throw Error("token " + tok->to_string() + " can not be an enumerator");
 				token_stream.next();
 			}
-			
+
 			cur_enumerate = this_enumerate + 1;
 			auto this_symbol = new WordRecorder(ESymbol::SENUM_MEMBER, Mem::INT);
 			this_symbol->count = this_enumerate;
@@ -128,6 +128,43 @@ namespace Mer
 				break;
 		}
 		token_stream.match(END); token_stream.match(SEMI);
+	}
+
+	bool is_a_structure_type(type_code_index t)
+	{
+		return type_name_mapping.find(t) != type_name_mapping.end();
+	}
+
+	std::pair<type_code_index,ParserNode *> count_bias(UStructure * us)
+	{
+		ParserNode* ret=nullptr;
+		std::string mem_name = Id::get_value(token_stream.this_token());
+		token_stream.next();
+		auto result = us->find_id_info(mem_name);
+		type_code_index ret_type=result->get_type();
+		switch (result->es)
+		{
+		case ESymbol::SGVAR:
+			ret = _make_l_conv(result->get_pos());
+			break;
+		case ESymbol::SGARR:
+			ret = optimizer::optimize_bin_op(
+				get_array_bias<ArrayRecorder>(result),
+				_make_l_conv(result->get_pos()),
+				BasicToken["+"]);
+			break;
+		default:
+			throw Error("unsupported grammar, @count_bias");
+		}
+		if (token_stream.this_tag() == DOT)
+		{
+			token_stream.next();
+			auto ustruct = find_ustructure_t(result->get_type());
+			auto children = count_bias(ustruct);
+			ret=optimizer::optimize_bin_op(children.second, ret, BasicToken["+"]);
+			ret_type = children.first;
+		}
+		return{ ret_type, ret };
 	}
 
 
@@ -141,9 +178,9 @@ namespace Mer
 			throw Error("Id " + result2->first + " undefined");
 		return result2->second;
 	}
-	void UStructure::push_new_children(size_t t, std::string id_name)
+	void UStructure::push_new_children(size_t t, std::string id_name, size_t count)
 	{
-		mapping.insert({ id_name,be++ });
+		mapping.insert({ id_name,be += count });
 		STMapping.insert({ id_name,t });
 	}
 	std::pair<type_code_index, size_t> UStructure::get_member_info(std::string member_name)
@@ -178,6 +215,7 @@ namespace Mer
 		}
 		std::cout << "-----------------------------------\n";
 	}
+
 
 	WordRecorder* UStructure::find_id_info(const std::string& id)
 	{
@@ -235,7 +273,7 @@ namespace Mer
 		for (auto& name : member_name_set)
 		{
 			auto result = us->get_member_info(name);
-			vec[result.second] = new LConV(Mem::create_var_t(result.first),result.first);
+			vec[result.second] = new LConV(Mem::create_var_t(result.first), result.first);
 		}
 	}
 
