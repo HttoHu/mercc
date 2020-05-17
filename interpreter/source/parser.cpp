@@ -65,7 +65,7 @@ namespace Mer
 		// sizeof(type)
 		if (Mem::is_basic_type(token_stream.this_tag()) || result&& result->es == STYPE)
 		{
-			type_code_index type_code= Mem::get_type_code();
+			type_code_index type_code = Mem::get_type_code();
 			if (token_stream.this_tag() == MUL)
 				obj = std::make_shared<Mem::Int>(sizeof(size_t));
 			else
@@ -124,7 +124,7 @@ namespace Mer
 
 	ArrayInitList* Parser::build_array_initlist_tree(size_t ele_type_code)
 	{
-		
+
 		std::vector<ArrayInitList*> children;
 		std::vector<ParserNode*> leaves;
 		// we regard "HEY" as {'H','E','Y','\0'};
@@ -132,7 +132,7 @@ namespace Mer
 		{
 			std::string value = String::get_value(token_stream.this_token());
 			for (auto a : value) {
-				leaves.push_back(new LConV(std::make_shared<Mem::Char>(a),Mem::CHAR));
+				leaves.push_back(new LConV(std::make_shared<Mem::Char>(a), Mem::CHAR));
 			}
 			leaves.push_back(new LConV(std::make_shared<Mem::Char>(0), Mem::CHAR));
 			token_stream.next();
@@ -200,7 +200,7 @@ namespace Mer
 			case ID:
 			default:
 				auto stmt = Parser::statement();
-				if(stmt)
+				if (stmt)
 					pre_stmt.push_back(UptrPNode(stmt));
 				break;
 			}
@@ -423,13 +423,13 @@ namespace Mer
 					// common condition check the dimension and size
 					else for (int i = 0; i < right_value.first.size(); i++) {
 
-						if (i >= array_indexs.size()|| right_value.first[i] > array_indexs[i])
+						if (i >= array_indexs.size() || right_value.first[i] > array_indexs[i])
 							throw Error("init list overflow!");
 						if (right_value.first[i] < array_indexs[i])
 						{
 							int len = array_indexs[i] - right_value.first[i];
-							for (int j = 0; j < len;j++)
-								right_value.second.push_back(new LConV(Mem::create_var_t(type_code),type_code));
+							for (int j = 0; j < len; j++)
+								right_value.second.push_back(new LConV(Mem::create_var_t(type_code), type_code));
 						}
 					}
 					// set initlist 
@@ -464,7 +464,7 @@ namespace Mer
 			else
 			{
 				// if the size is 1, it will be regarded as a single variable.
-				this->size = 1+result->get_size();
+				this->size = 1 + result->get_size();
 				auto init_lists = new InitList();
 				for (auto a : result->init_vec)
 					init_lists->exprs().push_back(new LConV(a->clone(), a->get_type()));
@@ -548,7 +548,7 @@ namespace Mer
 		for (size_t i = 1; i < vec.size(); i++)
 		{
 			_record_id(vec[i], type, tmp_pos += vec[i - 1]->get_size());
-			process_unit(vec[i], tmp_pos+mem.get_current());
+			process_unit(vec[i], tmp_pos + mem.get_current());
 		}
 		// clear unit 
 		for (auto it : vec)
@@ -565,7 +565,7 @@ namespace Mer
 
 	void LocalVarDecl::process_unit(VarDeclUnit* a, size_t c_pos)
 	{
-		if (a->get_size()!=1)
+		if (a->get_size() != 1)
 		{
 			std::vector<ParserNode*> arr;
 			auto exprs_info = a->get_expr();
@@ -575,7 +575,10 @@ namespace Mer
 				arr = static_cast<EmptyList*>(a->get_expr())->exprs();
 			// the info of the array.
 			auto array_info = new LConV(std::make_shared<Mem::Array>(type, c_pos, arr.size()), type);
-			exprs.push_back(std::unique_ptr<LConV>(array_info));
+			if (a->arr())
+				exprs.push_back(std::unique_ptr<LConV>(array_info));
+			else
+				sum--;
 			for (auto it : arr)
 			{
 				exprs.push_back(UptrPNode(it));

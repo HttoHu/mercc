@@ -101,6 +101,7 @@ namespace Mer
 		ParserNode* clone()override {
 			return new SubScript(left->clone(), subscr->clone());
 		}
+		size_t get_pos()override;
 		~SubScript() { delete left; delete subscr; }
 	private:
 		type_code_index type=0;
@@ -295,6 +296,7 @@ namespace Mer
 		type_code_index get_type()override;
 		Mem::Object execute()override;
 		ParserNode* clone()override;
+		size_t get_pos()override;
 	private:
 		ParserNode* id=nullptr;
 		type_code_index type;

@@ -127,6 +127,22 @@ namespace Mer
 		std::vector<ParserNode*> vec;
 		type_code_index type_code=0;
 	};
+	class MemberIndex :public ParserNode
+	{
+	public:
+		MemberIndex(ParserNode *p, ParserNode *b, type_code_index ty) :parent(p), bias(b), type(ty) {}
+		type_code_index get_type()override { return type; }
+		size_t get_pos()override;
+		Mem::Object execute()override;
+		ParserNode *clone()override {
+			return new MemberIndex(parent->clone(), bias->clone(), type);
+		}
+		~MemberIndex() { delete parent; delete bias; }
+	private:
+		ParserNode* parent;
+		ParserNode* bias;
+		type_code_index type;
+	};
 	class MemberVar :public ParserNode
 	{
 	public:

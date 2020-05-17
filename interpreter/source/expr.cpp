@@ -142,7 +142,7 @@ namespace Mer
 			// find member index and type;
 			auto bias = count_bias(ustruct);
 			
-			return optimizer::optimize_array_subscript(result, bias.second,bias.first);
+			return new MemberIndex(result, bias.second,bias.first);
 		}
 		return result;
 	}
@@ -536,6 +536,10 @@ namespace Mer
 		ret->type = type;
 		return ret;
 	}
+	size_t RmRef::get_pos()
+	{
+		return *(size_t*)id->execute()->get_raw_data();
+	}
 	Mer::Index::Index(ParserNode* l, size_t _index, type_code_index _type) :left(std::move(l)), index(_index), type(_type)
 	{
 		if (_type == -1)
@@ -565,6 +569,11 @@ namespace Mer
 	Mem::Object SubScript::execute()
 	{
 		return left->execute()->operator[](subscr->execute());
+	}
+
+	size_t SubScript::get_pos()
+	{
+		return left->get_pos() + (size_t)*(int*) subscr->execute()->get_raw_data();
 	}
 
 	LogicalBinOp::LogicalBinOp(ParserNode* l, Token* tok, ParserNode* r) :left(l),right(r)
