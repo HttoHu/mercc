@@ -578,7 +578,7 @@ namespace Mer
 
 	size_t SubScript::get_pos()
 	{
-		return left->get_pos() + (size_t)*(int*) subscr->execute()->get_raw_data();
+		return left->get_pos() + (size_t)*(int*) subscr->execute()->get_raw_data()+1;
 	}
 
 	LogicalBinOp::LogicalBinOp(ParserNode* l, Token* tok, ParserNode* r) :left(l),right(r)

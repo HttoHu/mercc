@@ -47,9 +47,10 @@ namespace Mer
 			enum class kind {
 				single = 0, container = 1, dictionary = 2,structure=3,
 			}type_kind = kind::single;
-			Type(const std::string& _name, type_code_index bt, const std::set<type_code_index>& _convertible_types,size_t tc=0)
+			Type(const std::string& _name, type_code_index bt, const std::set<type_code_index>& _convertible_types,size_t tc=1)
 				:name(_name), type_code(bt), convertible_types(_convertible_types),type_size(tc) {}
 			bool convertible(const type_code_index& t);
+			void reset_type_size(size_t sz) { type_size = sz; }
 			void add_compatible_type(type_code_index type_code);
 			virtual std::string to_string() { return  name; }
 			virtual std::size_t get_type_size() { return type_size; }

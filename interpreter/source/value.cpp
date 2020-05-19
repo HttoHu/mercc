@@ -136,6 +136,11 @@ namespace Mer {
 			return parse_glo(result);
 		case ESymbol::SENUM:
 		case ESymbol::SSTRUCTURE:
+			if (token_stream.next_token()->get_tag() == BEGIN)
+			{
+				token_stream.next();
+				return parse_struct_init_list(result->get_type());
+			}
 		case ESymbol::SCONTAINER:
 			return var_decl();
 		case ESymbol::SFUN:

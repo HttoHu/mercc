@@ -63,7 +63,7 @@ namespace Mer
 		if (token_stream.this_tag() == ID)
 			result = this_namespace->sl_table->find(Id::get_value(token_stream.this_token()));
 		// sizeof(type)
-		if (Mem::is_basic_type(token_stream.this_tag()) || result&& result->es == STYPE)
+		if (Mem::is_basic_type(token_stream.this_tag()) || result && result->es == STYPE)
 		{
 			type_code_index type_code = Mem::get_type_code();
 			if (token_stream.this_tag() == MUL)
@@ -77,7 +77,7 @@ namespace Mer
 		if (result == nullptr)
 			throw Error("undefined id " + Id::get_value(token_stream.this_token()));
 		size_t type_len = Mem::get_type_length(result->get_type());
-		obj = std::make_shared<Mem::Int>(result->count*type_len);
+		obj = std::make_shared<Mem::Int>(result->count * type_len);
 		token_stream.next();
 		token_stream.match(RPAREN);
 
@@ -118,7 +118,8 @@ namespace Mer
 				break;
 			arr_init_list = arr_init_list->children.front();
 		}
-
+		for (auto a : q)
+			delete a;
 		return { ret_first,ret_second };
 	}
 
@@ -161,8 +162,6 @@ namespace Mer
 			return new ArrayInitList(children);
 		}
 		else if (children.empty()) {
-			if (leaves.empty())
-				throw Error("empty array init list!");
 			return new ArrayInitList(leaves);
 		}
 		else
@@ -412,17 +411,20 @@ namespace Mer
 				{
 					token_stream.match(ASSIGN);
 					auto right_value = Parser::linearized_array(t);
+
+					// in case it is a struct array.
+					int type_len = Mem::get_type_length(type_code);
+					array_indexs.back() *= type_len;
 					/*
-						One-dimensional array can be init by one element for example:
+						One-dimensional array can be init by one element 
 					*/
 					if (array_indexs.size() == 1 && right_value.first.size() == 1 && right_value.first.front() == 1) {
-						for (int j = 0; j < array_indexs.front() - 1; j++) {
+						for (int j = 0; j < array_indexs.front() - 1; j++) {;
 							right_value.second.push_back(new LConV(Mem::create_var_t(type_code), type_code));
 						}
 					}
 					// common condition check the dimension and size
 					else for (int i = 0; i < right_value.first.size(); i++) {
-
 						if (i >= array_indexs.size() || right_value.first[i] > array_indexs[i])
 							throw Error("init list overflow!");
 						if (right_value.first[i] < array_indexs[i])
@@ -432,14 +434,16 @@ namespace Mer
 								right_value.second.push_back(new LConV(Mem::create_var_t(type_code), type_code));
 						}
 					}
+					// since we've considered the bias when parse subscript.
+					array_indexs.back() /= type_len;
 					// set initlist 
 					InitList* tmp = new InitList;
 					tmp->exprs() = right_value.second;
 					tmp->type = type_code;
 					tmp->size = right_value.second.size();
+					size = tmp->size + 1;
 					//=====
 					expr = tmp;
-
 				}
 				// array default init
 				else {
@@ -455,22 +459,29 @@ namespace Mer
 		if (type_name_mapping.find(type_code) != type_name_mapping.end())
 		{
 			Mer::UStructure* result = find_ustructure_t(type_code);
+			// if the size is 1, it will be regarded as a single variable.
+			this->size = 1 + result->get_size();
+			InitList* init_lists = nullptr;
 			if (token_stream.this_tag() == ASSIGN)
 			{
-				token_stream.match(ASSIGN);
-				expr = Expr(type_code).root();
-				if (expr->get_type() != type_code)
-					throw Error("::VarDeclUnit::VarDeclUnit(size_t t): type not matched, from " + std::to_string(type_code) + " to " + std::to_string(expr->get_type()));
+				token_stream.next();
+				if (token_stream.this_tag() == BEGIN)
+					init_lists = parse_struct_init_list(type_code);
+				else
+				{
+					ParserNode* right_v = Expr(type_code).root();
+					if (typeid(*right_v) != typeid(InitList))
+						throw Error("failed to create a structure " + type_to_string(type_code));
+					init_lists = static_cast<InitList*>(right_v);
+				}
 			}
 			else
 			{
-				// if the size is 1, it will be regarded as a single variable.
-				this->size = 1 + result->get_size();
-				auto init_lists = new InitList();
+				init_lists = new InitList();
 				for (auto a : result->init_vec)
 					init_lists->exprs().push_back(new LConV(a->clone(), a->get_type()));
-				expr = init_lists;
 			}
+			expr = init_lists;
 			return;
 		}
 		auto type_info = Mem::type_map.find(t);
@@ -496,8 +507,6 @@ namespace Mer
 			}
 			// common condition 
 			expr = Expr(type_code).root();
-			if (expr->get_type() != type_code)
-				expr = new Cast(expr, type_code);
 			return;
 		}
 		// container var decl
@@ -673,12 +682,25 @@ namespace Mer
 	{
 		return expr->execute()->Convert(to_type);
 	}
-	ArrayInitList::ArrayInitList(const std::vector<ParserNode*> _leaves) :leaves(_leaves)
+	ArrayInitList::ArrayInitList(const std::vector<ParserNode*> _leaves)
 	{
 		type_code_index tyc = _leaves.front()->get_type();
+		bool is_struct = false;
+		if (is_a_structure_type(tyc))
+			is_struct = true;
 		for (auto a : _leaves) {
-			if (a->get_type() != tyc)
+			if (is_struct)
+			{
+				if (typeid(*a) != typeid(InitList))
+					throw Error("elements' types are not uniform");
+				InitList* init_lists = static_cast<InitList*> (a);
+				for (auto elems : init_lists->exprs())
+					leaves.push_back(elems);
+			}
+			else if (a->get_type() != tyc)
 				throw Error("array initlist type not matched from " + type_to_string(tyc) + " to " + type_to_string(a->get_type()));
+			else
+				leaves.push_back(a);
 		}
 	}
 	ArrayInitList::ArrayInitList(const std::vector<ArrayInitList*> _children) :children(_children) {

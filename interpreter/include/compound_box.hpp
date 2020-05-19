@@ -38,6 +38,7 @@
 #define USER_TYPE_INDEX 10
 namespace Mer
 {
+	class InitList;
 	class Id;
 	class FunctionBase;
 	using TVar=std::pair<size_t, Mem::Object>;
@@ -95,7 +96,7 @@ namespace Mer
 	// to build the struct , records different information and push the struct to the ustructure_map
 	void build_ustructure();
 	void build_enum();
-	ParserNode* parse_struct_init_list(type_code_index _ty);
+	InitList* parse_struct_init_list(type_code_index _ty);
 	bool is_a_structure_type(type_code_index t);
 	std::pair<type_code_index, ParserNode *> count_bias(UStructure *us);
 	extern std::map<type_code_index, std::string> type_name_mapping;

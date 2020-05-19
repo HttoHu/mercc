@@ -72,11 +72,12 @@ namespace Mer
 		token_stream.match(ID);
 		token_stream.match(BEGIN);
 		UStructure* us = new UStructure();
-		//register struct 
+		// register struct 
 		ustructure_map.insert({ name,us });
 		Mem::type_index.insert({ name,Mem::type_counter });
 		type_name_mapping.insert({ Mem::type_counter,name });
-		Mem::type_map.insert({ Mem::type_counter ,new Mem::Type(name,Mem::type_counter,{Mem::type_counter}) });
+		Mem::Type* struct_type_info = new Mem::Type(name, Mem::type_counter, { Mem::type_counter });
+		Mem::type_map.insert({ Mem::type_counter,struct_type_info });
 		tsymbol_table->new_block();
 		//parsing
 		while (token_stream.this_tag() != END)
@@ -85,6 +86,7 @@ namespace Mer
 			_structure_member_def(type, us->init_vec, us);
 			token_stream.match(SEMI);
 		}
+		struct_type_info->reset_type_size(us->get_size());
 		tsymbol_table->end_block();
 		token_stream.match(END);
 		token_stream.match(SEMI);
@@ -130,7 +132,7 @@ namespace Mer
 		token_stream.match(END); token_stream.match(SEMI);
 	}
 
-	ParserNode* parse_struct_init_list(type_code_index _ty)
+	InitList* parse_struct_init_list(type_code_index _ty)
 	{
 		UStructure* result = find_ustructure_t(_ty);
 		const std::vector<size_t>& type_vec = result->get_type_structure();

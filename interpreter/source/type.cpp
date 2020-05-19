@@ -15,11 +15,11 @@ namespace Mer
 	{
 		//var_def
 		const std::map<type_code_index, Mem::Type*> _init_type_map{
-			{ BasicType::INT,new Type("int",BasicType::INT,{ BasicType::INT,BasicType::BOOL,BasicType::DOUBLE },sizeof(int))},
-			{ BasicType::DOUBLE,new Type("double",BasicType::DOUBLE,{ BasicType::INT,BasicType::BOOL,BasicType::DOUBLE },sizeof(double)) },
-			{ BasicType::BOOL,new Type("bool",BasicType::BOOL,{ BasicType::INT,BasicType::BOOL,BasicType::DOUBLE },sizeof(bool)) },
+			{ BasicType::INT,new Type("int",BasicType::INT,{ BasicType::INT,BasicType::BOOL,BasicType::DOUBLE })},
+			{ BasicType::DOUBLE,new Type("double",BasicType::DOUBLE,{ BasicType::INT,BasicType::BOOL,BasicType::DOUBLE })},
+			{ BasicType::BOOL,new Type("bool",BasicType::BOOL,{ BasicType::INT,BasicType::BOOL,BasicType::DOUBLE })},
 			{ BasicType::STRING,new Type("string",BasicType::STRING,{ 11,BasicType::STRING }) },
-			{ BasicType::CHAR,new Type("char",BasicType::CHAR,{9,BasicType::CHAR,BasicType::INT,BasicType::STRING},sizeof(char))},
+			{ BasicType::CHAR,new Type("char",BasicType::CHAR,{9,BasicType::CHAR,BasicType::INT,BasicType::STRING})},
 			{ BasicType::INIT_LIST,new Type("init_list",BasicType::INIT_LIST,{})},
 			{ BasicType::BVOID,new Type("void",BasicType::BVOID,{})}
 		};
@@ -70,7 +70,7 @@ namespace Mer
 		size_t get_type_length(type_code_index t)
 		{
 			if (t % 2 == 0)
-				return sizeof(size_t);
+				return 1u;
 			auto result = type_map.find(t);
 			if (result == type_map.end())
 				throw Error("T2 : type undefined");
