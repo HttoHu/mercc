@@ -433,11 +433,11 @@ namespace Mer
 			std::string str;
 		};
 
-		class InitListObj :public Value
+		class ObjList :public Value
 		{
 		public:
-			InitListObj(std::vector<Object>&& lst, type_code_index type_c) :elems(lst), type_code(type_c) {}
-			InitListObj(size_t sz, type_code_index type_c) : type_code(type_c), elems(sz) {}
+			ObjList(std::vector<Object>&& lst, type_code_index type_c) :elems(lst), type_code(type_c) {}
+			ObjList(size_t sz, type_code_index type_c) : type_code(type_c), elems(sz) {}
 			virtual Object operator[](Object v)override
 			{
 				return elems[std::static_pointer_cast<Int>(v)->get_value()];

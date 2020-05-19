@@ -188,11 +188,6 @@ namespace Mer
 			return new RmRef();
 		case GET_ADD:
 			return new GetAdd();
-		case BEGIN:
-		{
-			auto result = find_ustructure_t(expr_type);
-			return new StructureInitList(result,expr_type);
-		}
 		case CAST:
 			return new Cast();
 		case TTRUE:
@@ -322,6 +317,11 @@ namespace Mer
 	}
 
 
+	InitList::InitList(const std::vector<ParserNode*>& _exprs, type_code_index _ty):init_v(_exprs),type(_ty)
+	{
+		size = init_v.size();
+	}
+
 	InitList::InitList(type_code_index t):type(t)
 	{
 		token_stream.match(BEGIN);
@@ -382,7 +382,7 @@ namespace Mer
 		{
 			 v[i]=init_v[i]->execute()->clone();
 		}
-		auto ret= std::make_shared<Mem::InitListObj>(std::move(v), type);
+		auto ret= std::make_shared<Mem::ObjList>(std::move(v), type);
 		return ret;
 	}
 
@@ -431,12 +431,22 @@ namespace Mer
 		 delete expr; 
 	}
 
-	EmptyList::EmptyList(type_code_index t, size_t sz) :type_code(t), size(sz)
+	EmptyList::EmptyList(type_code_index t, size_t &sz) :type_code(t), size(sz)
 	{
 		for (size_t i = 0; i < sz; i++)
 		{
-			init_v.push_back(new LConV(Mem::create_var_t(t), t));
+			Mem::Object cur_obj = Mem::create_var_t(t);
+			if (typeid(*cur_obj) == typeid(Mem::ObjList))
+			{
+				auto& objs = std::static_pointer_cast<Mem::ObjList>(cur_obj)->elems;
+				size += objs.size() - 1;
+				for (auto a : objs)
+					init_v.push_back(new LConV(a->clone(), a->get_type()));
+			}
+			else
+				init_v.push_back(new LConV(Mem::create_var_t(t), t));
 		}
+		sz = size;
 	}
 
 	Mem::Object EmptyList::execute()
@@ -465,11 +475,6 @@ namespace Mer
 		if (token_stream.this_tag() == LPAREN)
 		{
 			expr = Expr(type_code).root();
-		}
-		else if (token_stream.this_tag() == BEGIN)
-		{
-			auto _result = find_ustructure_t(type_code);
-			expr = new StructureInitList(_result, type_code);
 		}
 		else if (token_stream.this_tag() == SEMI)
 		{

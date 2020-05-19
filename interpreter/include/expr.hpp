@@ -216,7 +216,7 @@ namespace Mer
 	class EmptyList :public ParserNode
 	{
 	public:
-		EmptyList(type_code_index t, size_t sz);
+		EmptyList(type_code_index t, size_t &sz);
 		Mem::Object execute()override;
 		std::vector<ParserNode*>& exprs() { return init_v; }
 		ParserNode* clone()override {
@@ -230,6 +230,7 @@ namespace Mer
 	class InitList:public ParserNode
 	{
 	public:
+		InitList(const std::vector<ParserNode*>& _exprs, type_code_index _ty);
 		InitList() {}
 		InitList(type_code_index);
 		// if sz is -1, the size will get from init_v.size();

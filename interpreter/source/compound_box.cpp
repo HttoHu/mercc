@@ -130,6 +130,26 @@ namespace Mer
 		token_stream.match(END); token_stream.match(SEMI);
 	}
 
+	ParserNode* parse_struct_init_list(type_code_index _ty)
+	{
+		UStructure* result = find_ustructure_t(_ty);
+		const std::vector<size_t>& type_vec = result->get_type_structure();
+		std::vector<size_t>::size_type idx = 0;
+		std::vector<ParserNode*> expr_lists;
+		// get member structure
+		token_stream.match(BEGIN);
+		while (true)
+		{
+			expr_lists.push_back(Expr(type_vec[idx++]).root());
+			if (token_stream.this_tag() == COMMA)
+				token_stream.match(COMMA);
+			else
+				break;
+		}
+		token_stream.match(END);
+		return new InitList(expr_lists, _ty);
+	}
+
 	bool is_a_structure_type(type_code_index t)
 	{
 		return type_name_mapping.find(t) != type_name_mapping.end();
@@ -180,6 +200,7 @@ namespace Mer
 	}
 	void UStructure::push_new_children(size_t t, std::string id_name, size_t count)
 	{
+		type_structure.push_back(t);
 		mapping.insert({ id_name,be += count });
 		STMapping.insert({ id_name,t });
 	}
@@ -223,111 +244,6 @@ namespace Mer
 		if (result == structure_member_table.end())
 			throw Error("member " + id + " no found!");
 		return result->second;
-	}
-
-
-
-	Mem::Object StructureInitList::execute()
-	{
-		std::vector<Mem::Object> obj_vec(vec.size());
-		for (size_t i = 0; i < vec.size(); i++)
-		{
-			obj_vec[i] = vec[i]->execute();
-		}
-		return std::make_shared<USObject>(obj_vec);
-	}
-
-	ParserNode* StructureInitList::clone()
-	{
-		auto ret = new StructureInitList;
-		ret->type_code = type_code;
-		for (auto a : vec)
-			ret->vec.push_back(a->clone());
-		return ret;
-	}
-
-	Mer::StructureInitList::StructureInitList(UStructure *us, type_code_index _type_code) : type_code(_type_code)
-	{
-		const auto& type_info_map = us->STMapping;
-		const auto& str_pos_map = us->mapping;
-		std::set<std::string> member_name_set;
-		for (const auto& a : type_info_map)
-			member_name_set.insert(a.first);
-		vec.resize(type_info_map.size());
-		token_stream.match(BEGIN);
-		size_t last_index = -1;
-		while (token_stream.this_tag() != END) {
-			auto member_suffix = token_stream.this_token();
-			auto result = us->get_member_info(Id::get_value(member_suffix));
-			member_name_set.erase(Id::get_value(member_suffix));
-			token_stream.match(ID);
-			token_stream.match(COLON);
-			vec[result.second] = Expr(result.first).root();
-			if (token_stream.this_tag() == END)
-			{
-				token_stream.match(END);
-				break;
-			}
-			token_stream.match(COMMA);
-		}
-		for (auto& name : member_name_set)
-		{
-			auto result = us->get_member_info(name);
-			vec[result.second] = new LConV(Mem::create_var_t(result.first), result.first);
-		}
-	}
-
-	Mer::DefaultInitList::DefaultInitList(type_code_index type)
-	{
-		auto ustruct = find_ustructure_t(type);
-		vec = ustruct->init();
-	}
-
-	Mem::Object DefaultInitList::execute()
-	{
-		std::vector<Mem::Object> ret(vec.size());
-		for (size_t i = 0; i < ret.size(); i++)
-			ret[i] = vec[i]->clone();
-		return std::make_shared<USObject>(ret);
-	}
-
-	ParserNode* DefaultInitList::clone()
-	{
-		auto ret = new DefaultInitList;
-		ret->vec = vec;
-		return ret;
-	}
-
-	Mem::Object USObject::operator=(Mem::Object v) {
-		// I am trying to do as much as possible check before runtime
-		auto a = v->clone();
-		this->vec = std::static_pointer_cast<USObject>(v)->vec;
-		return a;
-	}
-
-	Mem::Object USObject::clone() const
-	{
-		std::vector<Mem::Object> ret_vec(vec.size());
-		for (size_t i = 0; i < ret_vec.size(); i++)
-		{
-			ret_vec[i] = vec[i]->clone();
-		}
-		return std::make_shared<USObject>(ret_vec);
-	}
-
-	std::string USObject::to_string() const
-	{
-		std::string ret = "";
-		for (auto& a : vec)
-		{
-			ret += a->to_string() + "     ";
-		}
-		return ret;
-	}
-
-	Mem::Object MemberVar::execute()
-	{
-		return parents_vec.back()->operator[](std::make_shared<Mem::Int>(member_pos));
 	}
 	size_t MemberIndex::get_pos()
 	{

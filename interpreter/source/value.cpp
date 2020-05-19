@@ -171,15 +171,18 @@ namespace Mer {
 	template<typename ARR_TYPE>
 	ParserNode* get_array_bias(WordRecorder* var_info)
 	{
-		using namespace Mer;
+		int type_len = 1;
+		type_code_index ele_type = var_info->get_type();
+		if (is_a_structure_type(ele_type))
+			type_len = find_ustructure_t(ele_type)->get_size();;
 		auto array_indexs = static_cast<ARR_TYPE*>(var_info)->array_indexs;
 		std::vector<ParserNode*> indexs;
 		// if the following of the array is not [, then the array will decay to a pointer which points to the first elements
 		if (token_stream.this_tag() != Tag::LSB)
 			if (typeid(ARR_TYPE) == typeid(ArrayRecorder))
-				return new ArrayDecay(var_info->get_pos(), var_info->get_type() + 1);
+				return new ArrayDecay(var_info->get_pos(), ele_type + 1);
 			else
-				return new GloArrayDecay(var_info->get_pos(), var_info->get_type() + 1);
+				return new GloArrayDecay(var_info->get_pos(), ele_type + 1);
 		while (token_stream.this_tag() == Tag::LSB) {
 			token_stream.match(LSB);
 			indexs.push_back(Expr().root());
@@ -188,7 +191,7 @@ namespace Mer {
 		// obtain the a index from the indexs
 		ParserNode* ret = _make_l_conv(0);
 		for (int i = 0; i < indexs.size() - 1; i++) {
-			int p = 1;
+			int p = type_len;
 			for (int j = 0; j <= i; j++)
 			{
 				p *= array_indexs[indexs.size() - 1 - i];
@@ -196,6 +199,8 @@ namespace Mer {
 			ParserNode* tmp = optimizer::optimize_bin_op(indexs[i], _make_l_conv(p), BasicToken["*"]);
 			ret = optimizer::optimize_bin_op(ret, tmp, BasicToken["+"]);
 		}
+		if (type_len != 1)
+			indexs.back() = optimizer::optimize_bin_op(_make_l_conv(type_len), indexs.back(),BasicToken["*"]);
 		ret = optimizer::optimize_bin_op(ret, indexs.back(), BasicToken["+"]);
 		return ret;
 	}

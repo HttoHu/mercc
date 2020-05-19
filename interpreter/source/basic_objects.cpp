@@ -82,12 +82,12 @@ namespace Mer
 			return std::make_shared<String>("");
 		default:
 		{
-			auto result = type_init_map.find(type);
-			if (result == type_init_map.end())
+			if (is_a_structure_type(type))
 			{
-				return std::make_shared<USObject>(find_ustructure_t(type)->init());
+				auto struct_info = find_ustructure_t(type);
+				return std::make_shared<Mem::ObjList>(struct_info->init(),type);
 			}
-			return result->second->clone();
+			throw Error("Type error!");
 		}
 		}
 	}
@@ -282,14 +282,14 @@ namespace Mer
 		throw Error("convert: syntax error from " + ls + " to " + rs);
 	}
 
-	Mem::Object Mem::InitListObj::clone() const
+	Mem::Object Mem::ObjList::clone() const
 	{
 		std::vector<Object> vec;
 		for (auto& a : elems)
 		{
 			vec.push_back(a->clone());
 		}
-		return std::make_shared<InitListObj>(std::move(vec), type_code);
+		return std::make_shared<ObjList>(std::move(vec), type_code);
 	}
 
 	Mem::Object Mer::Mem::GArray::operator[](Object index)

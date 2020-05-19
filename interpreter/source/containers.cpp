@@ -55,7 +55,7 @@ namespace Mer
 		// vector<int> vec={1,2,3,4,5,6};
 		Mem::Object _init_vec_list(const std::vector<Mem::Object>& args)
 		{
-			auto list = std::static_pointer_cast<Mem::InitListObj> (args[0]);
+			auto list = std::static_pointer_cast<Mem::ObjList> (args[0]);
 			return std::make_shared<Container::Vector>(list->elems);
 		}
 		Mem::Object _init_vec_n(const std::vector < Mem::Object >& args)
@@ -131,7 +131,7 @@ namespace Mer
 		// vector<int> vec={1,2,3,4,5,6};
 		Mem::Object _init_deq_list(const std::vector<Mem::Object>& args)
 		{
-			auto list = std::static_pointer_cast<Mem::InitListObj> (args[0]);
+			auto list = std::static_pointer_cast<Mem::ObjList> (args[0]);
 			return std::make_shared<Container::Deque>(std::deque<Mem::Object>(list->elems.begin(), list->elems.end()));
 		}
 		Mem::Object _init_deq_n(const std::vector < Mem::Object >& args)

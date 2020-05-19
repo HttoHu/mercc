@@ -402,7 +402,7 @@ namespace Mer
 				tmp->exprs() = right_value.second;
 				tmp->type = type_code;
 				tmp->size = right_value.second.size();
-				//=====
+				//========
 				expr = tmp;
 			}
 			else
@@ -443,7 +443,10 @@ namespace Mer
 				}
 				// array default init
 				else {
-					expr = new EmptyList(type_code, size - 1);
+					// to get the number of empty list objs.
+					size_t tmp_size = size - 1;
+					expr = new EmptyList(type_code, tmp_size);
+					size = tmp_size + 1;
 				}
 			}
 			return;
@@ -452,9 +455,7 @@ namespace Mer
 		if (type_name_mapping.find(type_code) != type_name_mapping.end())
 		{
 			Mer::UStructure* result = find_ustructure_t(type_code);
-			if (token_stream.this_tag() == BEGIN)
-				expr = new StructureInitList(result, type_code);
-			else if (token_stream.this_tag() == ASSIGN)
+			if (token_stream.this_tag() == ASSIGN)
 			{
 				token_stream.match(ASSIGN);
 				expr = Expr(type_code).root();
@@ -513,7 +514,7 @@ namespace Mer
 		if (var_unit->arr())
 		{
 			auto array_id_recorder = new ArrayRecorder(type, pos, var_unit->array_indexs);
-			array_id_recorder->count = var_unit->get_size() - 1;
+			array_id_recorder->count = var_unit->get_size() - 1u;
 			this_namespace->sl_table->push(Id::get_value(var_unit->get_id()), array_id_recorder);
 		}
 		else if (var_unit->pointer())
@@ -624,7 +625,7 @@ namespace Mer
 
 	void GloVarDecl::process_unit(VarDeclUnit* a, size_t c_pos)
 	{
-		if (a->arr())
+		if (a->get_size() != 1)
 		{
 			std::vector<ParserNode*> arr;
 			auto exprs_info = a->get_expr();
@@ -634,7 +635,11 @@ namespace Mer
 				arr = static_cast<EmptyList*>(a->get_expr())->exprs();
 			// the info of the array.
 			auto array_info = new LConV(std::make_shared<Mem::GArray>(type, c_pos, arr.size()), type);
-			exprs.push_back(std::unique_ptr<LConV>(array_info));
+			if (a->arr())
+				exprs.push_back(std::unique_ptr<LConV>(array_info));
+			else
+				// struct 
+				sum--;
 			for (auto it : arr)
 				exprs.push_back(UptrPNode(it));
 			delete a->get_expr();
@@ -655,6 +660,12 @@ namespace Mer
 		token_stream.match(LPAREN);
 		expr = Expr().root();
 		token_stream.match(RPAREN);
+	}
+
+	Cast::Cast(ParserNode* _expr, type_code_index type) :expr(_expr), to_type(type)
+	{
+		if (!Mem::type_convertible(_expr->get_type(), type))
+			throw Error("type convert failed from " + type_to_string(_expr->get_type()) + " to " + type_to_string(type));
 	}
 
 

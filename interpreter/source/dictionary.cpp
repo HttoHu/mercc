@@ -15,7 +15,7 @@ namespace Mer
 	//set method
 	namespace {
 		Mem::Object _set_list_init(const std::vector<Mem::Object>& args) {
-			auto list = std::static_pointer_cast<Mem::InitListObj> (args[0]);
+			auto list = std::static_pointer_cast<Mem::ObjList> (args[0]);
 			return std::make_shared<Container::Set>(list->get_ele_type(),std::vector<Mem::Object>(list->elems.begin(), list->elems.end()));
 		}
 		Mem::Object _set_insert(const std::vector<Mem::Object>& args)
