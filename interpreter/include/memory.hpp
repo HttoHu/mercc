@@ -82,7 +82,8 @@ namespace Mer
 			}
 		}
 	private:
-		size_t glo_var_index = 0;
+		// reserve to ret value. If you need to return a structure, the return value will put into [0]-[99].
+		size_t glo_var_index = 200;
 		//alloc for memory
 		void alloc();
 		// how many var's the funciton contains;

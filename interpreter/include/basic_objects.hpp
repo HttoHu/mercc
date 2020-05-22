@@ -436,7 +436,7 @@ namespace Mer
 		class ObjList :public Value
 		{
 		public:
-			ObjList(std::vector<Object>&& lst, type_code_index type_c) :elems(lst), type_code(type_c) {}
+			ObjList(std::vector<Object>&& lst, type_code_index type_c) :elems(std::move(lst)), type_code(type_c) {}
 			ObjList(size_t sz, type_code_index type_c) : type_code(type_c), elems(sz) {}
 			virtual Object operator[](Object v)override
 			{

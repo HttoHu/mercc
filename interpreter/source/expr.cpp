@@ -18,6 +18,8 @@ namespace Mer
 
 	Expr::Expr(type_code_index t) :is_bool(false), expr_type(t) {
 		tree = assign();
+		if (!tree)
+			return;
 		if (expr_type == 0 && tree->get_type() != 0)
 		{
 			expr_type = tree->get_type();
@@ -316,6 +318,16 @@ namespace Mer
 		return op(expr->execute());
 	}
 
+
+	InitList* InitList::make_list_from_tmp( type_code_index ty,UStructure* us)
+	{
+		std::vector<ParserNode*> vec;
+		for (int i = 0u; i < us->get_size(); i++)
+		{
+			vec.push_back(new GVar(us->get_type_structure()[i], i));
+		}
+		return new InitList(vec, ty);
+	}
 
 	InitList::InitList(const std::vector<ParserNode*>& _exprs, type_code_index _ty):init_v(_exprs),type(_ty)
 	{

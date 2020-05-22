@@ -196,7 +196,6 @@ namespace Mer
 			case ENDOF:
 				mem.get_current() = mem.get_capacity() - 1;
 				return;
-			case ID:
 			default:
 				auto stmt = Parser::statement();
 				if (stmt)
@@ -218,12 +217,12 @@ namespace Mer
 		case STRING_DECL:
 			node = var_decl();
 			if (node == nullptr)
-			{
 				return nullptr;
-			}
 			break;
 		default:
 			node = Expr().root();
+			if (node == nullptr)
+				return nullptr;
 			break;
 		}
 
@@ -470,9 +469,13 @@ namespace Mer
 				else
 				{
 					ParserNode* right_v = Expr(type_code).root();
-					if (typeid(*right_v) != typeid(InitList))
-						throw Error("failed to create a structure " + type_to_string(type_code));
-					init_lists = static_cast<InitList*>(right_v);
+					if (typeid(*right_v) == typeid(InitList))
+						init_lists = static_cast<InitList*>(right_v);
+					else if (typeid(*right_v) == typeid(FunctionCall))
+						init_lists = InitList::make_list_from_tmp(type_code, result);
+					else
+						throw Error("Not finished Yet");
+					
 				}
 			}
 			else

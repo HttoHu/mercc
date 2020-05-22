@@ -6,8 +6,10 @@
 #include "../include/namespace.hpp"
 #include "../include/memory.hpp"
 #include "../include/word_record.hpp"
-#include <ctime>
 #include "../include/environment.hpp"
+#include "../include/compound_box.hpp"
+#include <ctime>
+
 namespace Mer
 {
 	size_t current_function_rety = 0;
@@ -17,7 +19,7 @@ namespace Mer
 	extern std::vector<size_t*> _pcs;
 	Mem::Object function_ret = nullptr;
 	// as we all known we can code if(expr){...} or if(expr) ...(single statement).
-
+	bool is_a_structure_type(type_code_index t);
 	namespace Parser
 	{
 
@@ -300,8 +302,8 @@ namespace Mer
 					break;
 				case RETURN:
 					token_stream.match(RETURN);
+					current_ins_table->push_back(std::make_unique <Return>(_pcs.back(),Expr(current_function_rety).root()));
 					token_stream.match(SEMI);
-					current_ins_table->push_back(std::make_unique <Return>(_pcs.back(), new Expr()));
 					break;
 				default:
 					current_ins_table->push_back(std::unique_ptr <ParserNode>(statement()));
@@ -472,9 +474,35 @@ namespace Mer
 	}
 	Return::Return(size_t* _pc, ParserNode* _expr) :pc(_pc), expr(_expr)
 	{
-		if (current_function_rety != expr->get_type() && /*common ptr can cast to void ptr*/(current_function_rety!=Mem::BVOID+1 || expr->get_type()%2))
-			throw Error("return type not matched with function return type");
 		des = this_block_size;
+		if (is_a_structure_type(current_function_rety))
+		{
+			// ret could be an InitList or Variable, GVar, ArrayIndex, etc... 
+			if (typeid(*_expr) == typeid(InitList))
+				expr = _expr;
+			else
+			{
+				size_t pos = _expr->get_pos();
+				delete _expr;
+				UStructure* us = find_ustructure_t(current_function_rety);
+				size_t type_len = us->get_size();
+				// tmp block 0-199 can not contain such large structure.
+				if (type_len >= 200)
+					throw Error("the struct is too large to return!");
+				std::vector<ParserNode*> objs_vec;
+				for (size_t i = 0; i < type_len; i++)
+				{
+					type_code_index ty = us->get_type_structure()[i];
+					ParserNode* holder = new Variable(ty, pos + i);
+					objs_vec.push_back(new TmpVar(ty,i,holder));
+				}
+				expr = new EvalMultiNode(std::move(objs_vec));
+				return;
+			}
+		}
+		if (current_function_rety != expr->get_type() && /*common ptr can cast to void ptr*/(current_function_rety!=Mem::BVOID+1 || expr->get_type()%2))
+			throw Error("return type not matched with function return type from "+type_to_string(expr->get_type())+" to "+ type_to_string(current_function_rety));
+
 	}
 	Mem::Object Return::execute()
 	{

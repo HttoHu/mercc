@@ -29,7 +29,7 @@ namespace Mer
 {
 
 	extern std::vector<ParserNode*> structure_parent_stack;
-
+	class UStructure;
 	class Cast;
 	// the santence do nothing.
 	class NonOp :public ParserNode
@@ -229,6 +229,8 @@ namespace Mer
 	};
 	class InitList:public ParserNode
 	{
+	public:
+		static InitList* make_list_from_tmp(type_code_index ty,UStructure* us);
 	public:
 		InitList(const std::vector<ParserNode*>& _exprs, type_code_index _ty);
 		InitList() {}

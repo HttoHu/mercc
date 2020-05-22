@@ -85,7 +85,7 @@ namespace Mer
 			if (is_a_structure_type(type))
 			{
 				auto struct_info = find_ustructure_t(type);
-				return std::make_shared<Mem::ObjList>(struct_info->init(),type);
+				return std::make_shared<Mem::ObjList>(struct_info->init(), type);
 			}
 			throw Error("Type error!");
 		}
@@ -101,6 +101,8 @@ namespace Mer
 
 	Mem::Object  Mem::Int::Convert(type_code_index type)
 	{
+		if (! (type % 2))
+			return std::make_shared<Mem::Pointer>(value);
 		switch (type)
 		{
 		case INT:
@@ -267,7 +269,7 @@ namespace Mer
 		{
 			throw std::runtime_error("array overflow!");
 		}
-		return mem[pos + i + 1+mem.get_current()];
+		return mem[pos + i + 1 + mem.get_current()];
 	}
 
 	Mem::Object Mem::Array::clone() const

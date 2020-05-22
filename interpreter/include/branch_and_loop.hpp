@@ -37,6 +37,9 @@ namespace Mer
 	class Return : public ParserNode
 	{
 	public:
+		// RVO? NO WAY! 
+		// (Because it needs too much change, and I am lazy :-| ), return the value to the mem[0]-mem[199] is the best way for me
+		// then I will have a good rest.Zzz
 		Return(size_t* _pc, ParserNode* _expr);
 		Mem::Object execute()override;
 		~Return();

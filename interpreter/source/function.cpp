@@ -211,10 +211,8 @@ void Mer::Parser::build_function(size_t rtype,std::string name)
 	Mer::global_stmt() = false;
 	_pcs.push_back(ret->pc);
 	current_ins_table = &(ret->stmts);
-
 	// off get the var_size of the function
 	Parser::build_function_block();
-
 	// count function size;
 	ret->off = mem.function_block_size;
 	mem.reset_func_block_size();

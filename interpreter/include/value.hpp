@@ -68,7 +68,7 @@ namespace Mer
 		type_code_index type;
 		size_t pos;
 	};
-	class Variable :public ParserNode
+	class Variable final:public ParserNode
 	{
 	public:
 		Variable(WordRecorder* wr);
@@ -85,7 +85,32 @@ namespace Mer
 		type_code_index type=0;
 		size_t pos;
 	};
-
+	// to translate structure, when a structure need to be returned.
+	class TmpVar :public ParserNode
+	{
+	public:
+		// the third argument should be cloned or only used in this scope.
+		TmpVar(type_code_index ty, size_t _pos, ParserNode* _expr) :type_code(ty), pos(_pos), trans_node(_expr) {}
+		size_t get_pos()override { return pos; }
+		type_code_index get_type()override { return type_code; }
+		ParserNode* clone() override;
+		Mem::Object execute()override;
+		~TmpVar() { delete trans_node; }
+	private:
+		ParserNode* trans_node;
+		size_t pos;
+		type_code_index type_code;
+	};
+	// To evaluate/run many nodes.
+	class EvalMultiNode final:public ParserNode {
+	public:
+		EvalMultiNode(std::vector<ParserNode*>&& vec) :exprs(std::move(vec)) {}
+		Mem::Object execute()override;
+		ParserNode* clone()override { throw Error("(interpreter-error):EvalMultiNode can not be cloned."); }
+		~EvalMultiNode();
+	private:
+		std::vector<ParserNode* > exprs;
+	};
 	class FunctionCall :public ParserNode
 	{
 	public:
@@ -93,6 +118,7 @@ namespace Mer
 		type_code_index get_type()override;
 		Mem::Object execute()override;
 		std::string to_string()override;
+		size_t get_pos()override { return 0; }
 		ParserNode* clone()override;
 		~FunctionCall();
 	private:

@@ -307,7 +307,7 @@ namespace Mer {
 		auto func = recorder->find(pf);
 		if (func == nullptr)
 		{
-			throw Error("function " + func_name + param_feature_to_string(pf) + " no found its defination");
+			throw Error("function " + func_name + param_feature_to_string(pf) + " not found its defination");
 		}
 		return new FunctionCall(func, exprs);
 	}
@@ -451,6 +451,25 @@ namespace Mer {
 	MemberFunctionCall::~MemberFunctionCall()
 	{
 		for (auto a : argument)
+			delete a;
+	}
+	ParserNode* TmpVar::clone()
+	{
+		return new TmpVar(type_code, pos, trans_node->clone());
+	}
+	Mem::Object TmpVar::execute()
+	{
+		return Mer::mem[pos] = trans_node->execute();
+	}
+	Mem::Object EvalMultiNode::execute()
+	{
+		for (auto a : exprs)
+			a->execute();
+		return nullptr;
+	}
+	EvalMultiNode::~EvalMultiNode()
+	{
+		for (auto a : exprs)
 			delete a;
 	}
 }
