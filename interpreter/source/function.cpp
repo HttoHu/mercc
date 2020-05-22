@@ -315,7 +315,7 @@ Mem::Object Mer::Function::run(const std::vector<Mem::Object>& objs)
 		stmts[*pc]->execute();
 	*pc = tmp;
 	mem.end_func();
-	return function_ret;
+	return nullptr;
 }
 
 Mer::Function::~Function()

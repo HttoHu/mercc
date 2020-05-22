@@ -474,7 +474,7 @@ namespace Mer
 					else if (typeid(*right_v) == typeid(FunctionCall))
 						init_lists = InitList::make_list_from_tmp(type_code, result);
 					else
-						throw Error("Not finished Yet");
+						init_lists = InitList::make_list_from_tmp(type_code, result);
 					
 				}
 			}

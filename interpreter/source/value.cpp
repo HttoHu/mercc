@@ -291,9 +291,10 @@ namespace Mer {
 		return exprs;
 	}
 
+	extern std::vector<UptrPNode>* current_ins_table ;
 	ParserNode* Parser::parse_function_call(Namespace* names)
 	{
-
+		
 		std::string func_name = Id::get_value(token_stream.this_token());
 		// to check the param's type.
 
@@ -309,7 +310,8 @@ namespace Mer {
 		{
 			throw Error("function " + func_name + param_feature_to_string(pf) + " not found its defination");
 		}
-		return new FunctionCall(func, exprs);
+		current_ins_table->push_back(std::make_unique <FunctionCall>(func, exprs));
+		return new GVar(func->get_type(), 0);
 	}
 
 	MemberFunctionCall* Parser::parse_call_by_function(FunctionBase* f)

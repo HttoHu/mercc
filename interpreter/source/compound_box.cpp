@@ -250,6 +250,7 @@ namespace Mer
 	size_t MemberIndex::get_pos()
 	{
 		// the struct is regarded as a array, and the first element is the array info so we need +1 to get the real pos
+
 		return parent->get_pos() + (size_t)*(int*)bias->execute()->get_raw_data();
 	}
 	Mem::Object MemberIndex::execute()
