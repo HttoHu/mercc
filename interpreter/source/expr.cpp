@@ -186,8 +186,13 @@ namespace Mer
 			return Parser::make_var();
 		case NEW:
 			return new NewExpr();
+		// deref.
 		case MUL:
-			return new RmRef();
+		{
+			token_stream.match(MUL);
+			auto ptr_part = factor();
+			return new RmRef(ptr_part, ptr_part->get_type());
+		}
 		case GET_ADD:
 			return new GetAdd();
 		case CAST:

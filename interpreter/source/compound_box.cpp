@@ -267,10 +267,6 @@ namespace Mer
 		size_t rhs_pos = rhs->get_pos();
 		for (int i = 0; i < len; i++)
 		{
-			if (!mem[rhs_pos + i])
-			{
-				std::cout << "我是吃屎长大的";
-			}
 			mem[pos + i + mem.get_current()] = mem[rhs_pos + i]->clone();
 		}
 		return nullptr;
@@ -286,7 +282,22 @@ namespace Mer
 		size_t rhs_pos = rhs->get_pos();
 		for (int i = 0; i < len; i++)
 		{
-			mem[pos + i] = mem[rhs_pos + i];
+			mem[pos + i] = mem[rhs_pos + i]->clone();
+		}
+		return nullptr;
+	}
+	StructCopyer::StructCopyer(type_code_index ty, ParserNode* l, ParserNode* r):lhs(l),rhs(r)
+	{
+		auto us = find_ustructure_t(ty);
+		len = us->get_size();
+	}
+	Mem::Object StructCopyer::execute()
+	{
+		size_t rpos = rhs->get_pos();
+		size_t lpos = lhs->get_pos();
+		for (int i = 0; i < len; i++)
+		{
+			mem[lpos + i] = mem[rpos + i]->clone();
 		}
 		return nullptr;
 	}

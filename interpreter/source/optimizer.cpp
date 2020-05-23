@@ -4,6 +4,17 @@
 namespace Mer
 {
 	bool is_a_structure_type(type_code_index t);
+	class StructCopyer :public ParserNode
+	{
+	public:
+		StructCopyer(type_code_index ty, ParserNode* l, ParserNode* r);
+		Mem::Object execute()override;
+		~StructCopyer();
+	private:
+		int len;
+		ParserNode* lhs;
+		ParserNode* rhs;
+	};
 	namespace optimizer
 	{
 		namespace {
@@ -99,14 +110,13 @@ namespace Mer
 
 		
 		ParserNode* optimize_bin_op(ParserNode* left, ParserNode* right, Token* tok)
-		{
-			
+		{			
 			type_code_index ty = left->get_type();
 			if (is_a_structure_type(ty))
 			{
 				if (tok->get_tag() != ASSIGN)
 					throw Error("structs don't support the operation " + tok->to_string());
-
+				return new StructCopyer(ty, left, right);
 			}
 			if (typeid(*left) == typeid(LConV) && typeid(*right) == typeid(LConV)) {
 				Mem::Object left_v = left->execute();

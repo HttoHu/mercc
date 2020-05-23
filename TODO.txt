@@ -2,12 +2,10 @@
 OK. !(0)= 0 bug
 OK. enum. => int.
 2. struct 升级
--> 参数传递
--> struct赋值.
+-> 参数传递 
+OK struct赋值.
 -> get_structure 要改一下，数组要记录一下重复的
 3. 位运算
-
-
 4. string库,stdio库
 5. math库,stdlib库
 6. #define

@@ -111,6 +111,21 @@ namespace Mer
 		size_t pos;
 		ParserNode* rhs;
 	};
+	class StructCopyer :public ParserNode
+	{
+	public:
+		StructCopyer(type_code_index ty, ParserNode* l, ParserNode* r);
+		Mem::Object execute()override;
+		~StructCopyer() {
+			delete lhs;
+			delete rhs;
+		}
+
+	private:
+		int len;
+		ParserNode* lhs;
+		ParserNode* rhs;
+	};
 	// you can get the struct_info by its name
 	extern std::map<std::string, UStructure*> ustructure_map;
 	// get the struct name by its type code.

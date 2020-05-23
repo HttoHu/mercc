@@ -642,17 +642,17 @@ namespace Mer
 
 	Mem::Object GloVarDecl::execute()
 	{
-		for (int i = 0; i < sum; i++) {
-			mem[pos + (size_t)i] = exprs[i]->execute()->clone();
-		}
+		for (auto& it : writers)
+			it->execute();
 		return nullptr;
 	}
 
 	void GloVarDecl::process_unit(VarDeclUnit* a, size_t c_pos)
 	{
+		std::vector<ParserNode*> arr;
 		if (a->get_size() != 1)
 		{
-			std::vector<ParserNode*> arr;
+
 			auto exprs_info = a->get_expr();
 			if (typeid(*exprs_info) == typeid(InitList))
 				arr = static_cast<InitList*>(a->get_expr())->exprs();
@@ -661,24 +661,26 @@ namespace Mer
 			else
 			{
 				// to copy a struct to init a struct var.
-				auto writer = new StructWriter(type, c_pos, a->get_expr());
-				arr.push_back(writer);
-			}
-
-			// the info of the array.
-			auto array_info = new LConV(std::make_shared<Mem::GArray>(type, c_pos, arr.size()), type);
-			if (a->arr())
-				exprs.push_back(std::unique_ptr<LConV>(array_info));
-			else
-				// struct 
+				writers.push_back(UptrPNode(new StructWriter(type, c_pos, a->get_expr())));
 				sum--;
-			for (auto it : arr)
-				exprs.push_back(UptrPNode(it));
-			delete a->get_expr();
+				return;
+			}
+			// the info of the array.
+
+			if (a->arr())
+			{
+				auto array_info = new LConV(std::make_shared<Mem::GArray>(type, c_pos, arr.size()), type);
+				arr.push_back(array_info);
+			}
+			else
+				// if it is a structure the size is one more than original length, because if the size is 1, 
+				// it will be regarded as a single variable.
+				sum--;
 		}
 		else {
-			exprs.push_back(UptrPNode(a->get_expr()));
+			arr.push_back(a->get_expr());
 		}
+		writers.push_back(UptrPNode(new GVarWriter(std::move(arr), c_pos)));
 	}
 
 

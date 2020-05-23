@@ -145,7 +145,7 @@ namespace Mer
 		void process_unit(VarDeclUnit* a, size_t c_pos);
 		type_code_index pos = 0;
 		int sum = 0;
-		std::vector<UptrPNode> exprs;
+		std::vector<UptrPNode> writers;
 		type_code_index type;
 	};
 	// to convert type;
