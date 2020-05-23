@@ -88,6 +88,18 @@ namespace Mer
 		ParserNode* bias;
 		type_code_index type;
 	};
+	// to execute assign operator of struct
+	class StructWriter :public ParserNode
+	{
+	public:
+		StructWriter(size_t ty, size_t _pos, ParserNode* p);
+		Mem::Object execute()override;
+	private:
+		size_t type;
+		int len;
+		size_t pos;
+		ParserNode* rhs;
+	};
 	// you can get the struct_info by its name
 	extern std::map<std::string, UStructure*> ustructure_map;
 	// get the struct name by its type code.

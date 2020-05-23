@@ -471,11 +471,12 @@ namespace Mer
 					ParserNode* right_v = Expr(type_code).root();
 					if (typeid(*right_v) == typeid(InitList))
 						init_lists = static_cast<InitList*>(right_v);
-					else if (typeid(*right_v) == typeid(FunctionCall))
-						init_lists = InitList::make_list_from_tmp(type_code, result);
-					else
-						init_lists = InitList::make_list_from_tmp(type_code, result);
-					
+					else if(typeid(*right_v)==typeid(GVar))
+						init_lists = InitList::make_list_from_tmp(right_v->get_pos(),type_code, result);		
+					else {
+						expr = right_v;
+						return;
+					}
 				}
 			}
 			else
@@ -584,8 +585,12 @@ namespace Mer
 			auto exprs_info = a->get_expr();
 			if (typeid(*exprs_info) == typeid(InitList))
 				arr = static_cast<InitList*>(a->get_expr())->exprs();
-			else
+			else if(typeid(*exprs_info)==typeid(EmptyList))
 				arr = static_cast<EmptyList*>(a->get_expr())->exprs();
+			else
+			{
+				auto assign=
+			}
 			// the info of the array.
 			auto array_info = new LConV(std::make_shared<Mem::Array>(type, c_pos, arr.size()), type);
 			if (a->arr())

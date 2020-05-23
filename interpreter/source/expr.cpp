@@ -319,12 +319,12 @@ namespace Mer
 	}
 
 
-	InitList* InitList::make_list_from_tmp( type_code_index ty,UStructure* us)
+	InitList* InitList::make_list_from_tmp(size_t pos, type_code_index ty,UStructure* us)
 	{
 		std::vector<ParserNode*> vec;
 		for (int i = 0u; i < us->get_size(); i++)
 		{
-			vec.push_back(new GVar(us->get_type_structure()[i], i));
+			vec.push_back(new GVar(us->get_type_structure()[i], pos+i));
 		}
 		return new InitList(vec, ty);
 	}

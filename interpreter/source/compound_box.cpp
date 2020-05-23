@@ -257,4 +257,18 @@ namespace Mer
 	{
 		return Mer::mem[get_pos()];
 	}
+	StructWriter::StructWriter(size_t ty, size_t _pos, ParserNode* p) :type(ty), pos(_pos), rhs(p) 
+	{
+		auto us = find_ustructure_t(ty);
+		len = us->get_size();
+	}
+	Mem::Object StructWriter::execute()
+	{
+		size_t rhs_pos = rhs->get_pos();
+		for (int i = 0; i < len; i++)
+		{
+			mem[pos + i + mem.get_current()] = mem[rhs_pos + i];
+		}
+		return nullptr;
+	}
 }
