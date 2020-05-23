@@ -3,6 +3,7 @@
 #include "../include/value.hpp"
 namespace Mer
 {
+	bool is_a_structure_type(type_code_index t);
 	namespace optimizer
 	{
 		namespace {
@@ -95,9 +96,18 @@ namespace Mer
 			{Mer::MINUS,get_neg},{Mer::PLUS,trans},{NOT,get_neg},{INC,int_front_inc},{DEC,int_front_dec},
 			{_BINC,int_back_inc},{_BDEC,int_back_dec}
 		};
+
+		
 		ParserNode* optimize_bin_op(ParserNode* left, ParserNode* right, Token* tok)
 		{
+			
 			type_code_index ty = left->get_type();
+			if (is_a_structure_type(ty))
+			{
+				if (tok->get_tag() != ASSIGN)
+					throw Error("structs don't support the operation " + tok->to_string());
+
+			}
 			if (typeid(*left) == typeid(LConV) && typeid(*right) == typeid(LConV)) {
 				Mem::Object left_v = left->execute();
 				Mem::Object right_v;

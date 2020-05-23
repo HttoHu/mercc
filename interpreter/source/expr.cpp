@@ -44,7 +44,7 @@ namespace Mer
 		{
 			auto tok = token_stream.this_token();
 			token_stream.next();
-			result = new BinOp(result, tok, conditional_expr());
+			result = optimizer::optimize_bin_op(result, conditional_expr(), tok);
 		}
 		return result;
 	}

@@ -38,7 +38,7 @@
 
 namespace Mer
 {
-	const int mem_max_size = 4096;
+	const int mem_max_size = 10000;
 	class Memory
 	{
 	public:

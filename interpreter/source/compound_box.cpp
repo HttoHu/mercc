@@ -267,7 +267,26 @@ namespace Mer
 		size_t rhs_pos = rhs->get_pos();
 		for (int i = 0; i < len; i++)
 		{
-			mem[pos + i + mem.get_current()] = mem[rhs_pos + i];
+			if (!mem[rhs_pos + i])
+			{
+				std::cout << "我是吃屎长大的";
+			}
+			mem[pos + i + mem.get_current()] = mem[rhs_pos + i]->clone();
+		}
+		return nullptr;
+	}
+	GStructWriter::GStructWriter(size_t ty, size_t _pos, ParserNode* p) :type(ty), pos(_pos), rhs(p)
+	{
+		auto us = find_ustructure_t(ty);
+		len = us->get_size();
+	}
+
+	Mem::Object GStructWriter::execute()
+	{
+		size_t rhs_pos = rhs->get_pos();
+		for (int i = 0; i < len; i++)
+		{
+			mem[pos + i] = mem[rhs_pos + i];
 		}
 		return nullptr;
 	}

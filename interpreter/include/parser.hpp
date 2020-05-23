@@ -47,6 +47,26 @@ namespace Mer
 		size_t off = 0;
 		Token* identify;
 	};
+	class VarWriter :public ParserNode
+	{
+	public:
+		VarWriter(std::vector<ParserNode*>&& _exprs, size_t pos) :exprs(std::move(_exprs)), spos(pos) {}
+		Mem::Object execute()override;
+		~VarWriter() {for (auto a : exprs)delete a;}
+	private:
+		size_t spos;
+		std::vector<ParserNode*> exprs;
+	};
+	class GVarWriter :public ParserNode
+	{
+	public:
+		GVarWriter(std::vector<ParserNode*>&& _exprs, size_t pos) :exprs(std::move(_exprs)), spos(pos) {}
+		Mem::Object execute()override;
+		~GVarWriter() {for (auto a : exprs)delete a;}
+	private:
+		size_t spos;
+		std::vector<ParserNode*> exprs;
+	};
 	class NamePart
 	{
 	public:
@@ -94,10 +114,12 @@ namespace Mer
 			return type_to_string(type);
 		}
 	private:
+		size_t obj_len;
+	private:
 		void process_unit(VarDeclUnit* a, size_t c_pos);
 		type_code_index pos;
 		type_code_index sum = 0;
-		std::vector<UptrPNode> exprs;
+		std::vector<UptrPNode> writers;
 		type_code_index type;
 	};
 	class ConditionalOperator :public ParserNode

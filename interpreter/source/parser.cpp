@@ -194,7 +194,7 @@ namespace Mer
 				build_ustructure();
 				break;
 			case ENDOF:
-				mem.get_current() = mem.get_capacity() - 1;
+				mem.get_current() = mem.get_capacity() - 100;
 				return;
 			default:
 				auto stmt = Parser::statement();
@@ -415,10 +415,11 @@ namespace Mer
 					int type_len = Mem::get_type_length(type_code);
 					array_indexs.back() *= type_len;
 					/*
-						One-dimensional array can be init by one element 
+						One-dimensional array can be init by one element
 					*/
 					if (array_indexs.size() == 1 && right_value.first.size() == 1 && right_value.first.front() == 1) {
-						for (int j = 0; j < array_indexs.front() - 1; j++) {;
+						for (int j = 0; j < array_indexs.front() - 1; j++) {
+							;
 							right_value.second.push_back(new LConV(Mem::create_var_t(type_code), type_code));
 						}
 					}
@@ -471,8 +472,8 @@ namespace Mer
 					ParserNode* right_v = Expr(type_code).root();
 					if (typeid(*right_v) == typeid(InitList))
 						init_lists = static_cast<InitList*>(right_v);
-					else if(typeid(*right_v)==typeid(GVar))
-						init_lists = InitList::make_list_from_tmp(right_v->get_pos(),type_code, result);		
+					else if (typeid(*right_v) == typeid(GVar))
+						init_lists = InitList::make_list_from_tmp(right_v->get_pos(), type_code, result);
 					else {
 						expr = right_v;
 						return;
@@ -483,7 +484,9 @@ namespace Mer
 			{
 				init_lists = new InitList();
 				for (auto a : result->init_vec)
+				{
 					init_lists->exprs().push_back(new LConV(a->clone(), a->get_type()));
+				}
 			}
 			expr = init_lists;
 			return;
@@ -552,6 +555,7 @@ namespace Mer
 
 	LocalVarDecl::LocalVarDecl(std::vector<VarDeclUnit*>& vec, type_code_index t) :type(t)
 	{
+		obj_len = Mem::get_type_length(t);
 		for (const auto& a : vec)
 			sum += a->get_size();
 		pos = mem.push(sum) - sum;
@@ -571,43 +575,47 @@ namespace Mer
 
 	Mem::Object LocalVarDecl::execute()
 	{
-		for (int i = 0; i < sum; i++) {
-			mem[mem.get_current() + pos + i] = exprs[i]->execute()->clone();
-		}
+		for (auto& writer : writers)
+			writer->execute();
 		return Mem::Object(nullptr);
 	}
 
 	void LocalVarDecl::process_unit(VarDeclUnit* a, size_t c_pos)
 	{
+		std::vector<ParserNode*> arr;
 		if (a->get_size() != 1)
 		{
-			std::vector<ParserNode*> arr;
+
 			auto exprs_info = a->get_expr();
 			if (typeid(*exprs_info) == typeid(InitList))
 				arr = static_cast<InitList*>(a->get_expr())->exprs();
-			else if(typeid(*exprs_info)==typeid(EmptyList))
+			else if (typeid(*exprs_info) == typeid(EmptyList))
 				arr = static_cast<EmptyList*>(a->get_expr())->exprs();
 			else
 			{
-				auto assign=
+				// to copy a struct to init a struct var.
+				writers.push_back(UptrPNode(new StructWriter(type, c_pos, a->get_expr())));
+				sum--;
+				return;
 			}
 			// the info of the array.
-			auto array_info = new LConV(std::make_shared<Mem::Array>(type, c_pos, arr.size()), type);
+
 			if (a->arr())
-				exprs.push_back(std::unique_ptr<LConV>(array_info));
-			else
-				sum--;
-			for (auto it : arr)
 			{
-				exprs.push_back(UptrPNode(it));
+				auto array_info = new LConV(std::make_shared<Mem::Array>(type, c_pos, arr.size()), type);
+				arr.push_back(array_info);
 			}
-			delete a->get_expr();
+			else
+				// if it is a structure the size is one more than original length, because if the size is 1, 
+				// it will be regarded as a single variable.
+				sum--;
 		}
 		else {
-			exprs.push_back(UptrPNode(a->get_expr()));
+			arr.push_back(a->get_expr());
 		}
-	}
+		writers.push_back(UptrPNode(new VarWriter(std::move(arr), c_pos)));
 
+	}
 	GloVarDecl::GloVarDecl(std::vector<VarDeclUnit*>& vec, type_code_index t) :type(t)
 	{
 		for (const auto& a : vec)
@@ -648,8 +656,15 @@ namespace Mer
 			auto exprs_info = a->get_expr();
 			if (typeid(*exprs_info) == typeid(InitList))
 				arr = static_cast<InitList*>(a->get_expr())->exprs();
-			else
+			else if (typeid(*exprs_info) == typeid(EmptyList))
 				arr = static_cast<EmptyList*>(a->get_expr())->exprs();
+			else
+			{
+				// to copy a struct to init a struct var.
+				auto writer = new StructWriter(type, c_pos, a->get_expr());
+				arr.push_back(writer);
+			}
+
 			// the info of the array.
 			auto array_info = new LConV(std::make_shared<Mem::GArray>(type, c_pos, arr.size()), type);
 			if (a->arr())
@@ -724,5 +739,19 @@ namespace Mer
 		if (cond)
 			return true_expr->execute();
 		return false_expr->execute();
+	}
+	Mem::Object VarWriter::execute()
+	{
+		for (int i = 0; i < exprs.size(); i++) {
+			mem[mem.get_current() + spos + i] = exprs[i]->execute()->clone();
+		}
+		return Mem::Object(nullptr);
+	}
+	Mem::Object GVarWriter::execute()
+	{
+		for (int i = 0; i < exprs.size(); i++) {
+			mem[spos + i] = exprs[i]->execute()->clone();
+		}
+		return Mem::Object(nullptr);
 	}
 }
