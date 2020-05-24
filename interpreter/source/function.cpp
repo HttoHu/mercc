@@ -83,6 +83,7 @@ Param* Mer::Parser::build_param()
 	while (true)
 	{
 		type_code_index type = Mem::get_type_code();
+		auto type_length = Mem::get_type_length(type);
 		ESymbol es = SVAR;
 		if (token_stream.this_tag() == MUL)
 		{
@@ -90,8 +91,13 @@ Param* Mer::Parser::build_param()
 			type++;
 		}
 		auto name = new NamePart();
-
-		size_t pos = mem.push(name->get_count()) - 1u;
+		// decay to pointer.
+		if (name->is_array())
+		{
+			type++;
+			type_length = 1;
+		}
+		size_t pos = mem.push(type_length) - type_length;
 		tsymbol_table->push(Id::get_value(name->get_id()), new VarIdRecorder(type, pos, es));
 		ret->push_new_param(type, pos);
 		delete name;
@@ -305,11 +311,9 @@ Mer::Function::Function(type_code_index t) :type(t) {}
 Mem::Object Mer::Function::run(const std::vector<Mem::Object>& objs)
 {
 	mem.new_func(off);
-	auto param_table = param->get_param_table();
-	for (size_t i = 0; i < param->get_param_table().size(); i++)
-	{
-		mem[mem.get_current() + param_table[i].second] = objs[i];
-	}
+	size_t arg_count = objs.size();
+	for (size_t i = 0; i <arg_count ; i++)
+		mem[mem.get_current()+i] = objs[i];
 	size_t tmp = *pc;
 	for (*pc = 0; *pc < stmts.size(); ++ * pc)
 		stmts[*pc]->execute();

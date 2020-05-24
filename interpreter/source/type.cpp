@@ -59,7 +59,7 @@ namespace Mer
 		{
 			if (t1 == t2)
 				return true;
-			if (t1 == BVOID + 1 || t2 % 2==0)
+			if (t1 == BVOID + 1 && t2 % 2==0)
 				return true;
 			auto result1 = type_map.find(t1), result2 = type_map.find(t2);
 			if (result1 == type_map.end() || result2 == type_map.end())

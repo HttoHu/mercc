@@ -44,13 +44,13 @@ namespace Mer {
 		return ret;
 	}
 
-	FunctionCall::FunctionCall(FunctionBase* _func, const std::vector<ParserNode*>& exprs) : func(_func), argument(exprs)
+	FunctionCall::FunctionCall(FunctionBase* _func, std::vector<ParserNode*>&& exprs) : func(_func)
 	{
 		if (!_func->is_check_type())
-			return;
-		for (int i = 0; i < argument.size(); i++)
+			;
+		else for (int i = 0; i < argument.size(); i++)
 		{
-			type_code_index arg_type = argument[i]->get_type(), param_type = func->param_types[i];
+			type_code_index arg_type = exprs[i]->get_type(), param_type = func->param_types[i];
 			if (arg_type != param_type)
 			{
 				// common ptr can convert to void ptr
@@ -58,9 +58,11 @@ namespace Mer {
 					continue;
 				else
 					// type convert
-					argument[i] = new Cast(argument[i], param_type);
+					exprs[i] = new Cast(exprs[i], param_type);
 			}
 		}
+		for (auto it : exprs)
+			argument.push_back(ObjGener::from(it));
 	}
 
 	type_code_index FunctionCall::get_type()
@@ -71,31 +73,24 @@ namespace Mer {
 	Mem::Object FunctionCall::execute()
 	{
 		std::vector<Mem::Object> tmp;
-		for (const auto& a : argument)
+		for (auto it : argument)
 		{
-			tmp.push_back(a->execute()->clone());
+			auto tmp_vec = it->gen_obj();
+			tmp.insert(tmp.end(), tmp_vec.begin(), tmp_vec.end());
 		}
 		return func->run(tmp);
 	}
 
 	std::string FunctionCall::to_string()
 	{
-		std::string str = "function:";
-		//str += std::to_string(func->funtion_pos);
-		str += "(";
-		for (auto& a : argument)
-			str += a->to_string();
-		str += ")";
+		std::string str = "function()";
 		return str;
 	}
 
 	ParserNode* FunctionCall::clone()
 	{
-		auto ret = new FunctionCall;
-		for (auto a : argument)
-			ret->argument.push_back(a->clone());
-		ret->func = func;
-		return ret;
+		throw Error("Can not clone");
+		//return ret;
 	}
 
 	FunctionCall::~FunctionCall()
@@ -214,9 +209,12 @@ namespace Mer {
 	{
 		token_stream.match(ID);
 		auto ret = get_array_bias<ARR_TYPE>(var_info);
+		if (typeid(*ret) == typeid(ArrayDecay)||typeid(*ret)== typeid(GloArrayDecay))
+			return ret;
 		if (typeid(ARR_TYPE) == typeid(ArrayRecorder))
 			return optimizer::optimize_array_subscript(new Variable(var_info), ret);
-		return optimizer::optimize_array_subscript(new GVar(var_info), ret);
+		else
+			return optimizer::optimize_array_subscript(new GVar(var_info), ret);
 	}
 
 
@@ -247,7 +245,7 @@ namespace Mer {
 		// get the args' type to find init function
 		// cos the init function can be overloaded by the different param
 		std::vector<type_code_index> args_type;
-		for (auto& a : exprs)
+		for (auto a : exprs)
 		{
 			args_type.push_back(a->get_type());
 		}
@@ -267,7 +265,7 @@ namespace Mer {
 			throw Error("type:" + type_to_string(type) + " don't support initializer " + err_msg);
 		auto func = result->second;
 
-		return new FunctionCall(func, exprs);
+		return new FunctionCall(func, std::move(exprs));
 	}
 
 	std::vector<ParserNode*> Parser::parse_arguments()
@@ -310,7 +308,7 @@ namespace Mer {
 		{
 			throw Error("function " + func_name + param_feature_to_string(pf) + " not found its defination");
 		}
-		current_ins_table->push_back(std::make_unique <FunctionCall>(func, exprs));
+		current_ins_table->push_back(std::make_unique <FunctionCall>(func, std::move(exprs)));
 		return new GVar(func->get_type(), 0);
 	}
 
@@ -473,5 +471,44 @@ namespace Mer {
 	{
 		for (auto a : exprs)
 			delete a;
+	}
+	std::vector<Mem::Object> MultiObjGener::gen_obj()
+	{
+		std::vector<Mem::Object> ret;
+		for (auto it : nodes)
+			ret.push_back(it->execute());
+		return ret;
+	}
+	MultiObjGener::~MultiObjGener()
+	{
+		for (auto it : nodes)
+			delete it;
+	}
+	StructObjGener::StructObjGener(type_code_index ty_c, ParserNode* _node):node(_node)
+	{
+		len = find_ustructure_t(ty_c)->get_size();
+	}
+	std::vector<Mem::Object> StructObjGener::gen_obj()
+	{
+		std::vector<Mem::Object> ret(len);
+		int sp = node->get_pos();
+		for (int i = 0; i < len; i++)
+		{
+			ret[i] = mem[sp + i]->clone();
+		}
+		return ret;
+	}
+	ObjGener* ObjGener::from(ParserNode* node)
+	{
+		// too many typeid to ascertain the type of node...
+		// the work is finished by parsing phase... so don't worry about the performance.
+		if (typeid(*node) == typeid(InitList))
+			return new MultiObjGener(std::move(static_cast<InitList*>(node)->exprs()));
+		else if (typeid(*node) == typeid(EmptyList))
+			return new MultiObjGener(std::move(static_cast<EmptyList*>(node)->exprs()));
+		else if (is_a_structure_type(node->get_type()))
+			return new StructObjGener(node->get_type(), node);
+		else
+			return new SingleObjGener(node);
 	}
 }

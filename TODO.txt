@@ -2,7 +2,7 @@
 OK. !(0)= 0 bug
 OK. enum. => int.
 2. struct 升级
--> 参数传递 
+OK 参数传递 
 OK struct赋值.
 -> get_structure 要改一下，数组要记录一下重复的
 3. 位运算

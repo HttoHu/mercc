@@ -34,7 +34,48 @@ namespace Mer
 	class Expr;
 	class FunctionBase;
 	class StructureBase;
+	// the sets of the ObjGener is to generate objects when function calls;
+	// for instance f(a) -> a is a structure but it looks like a single variable and just can generate one object.
+	// so we need to introduce ObjGener, which can generate many objects from a ParserNode.
+	class ObjGener
+	{
+	public:
+		// convert parser_node to obj gener.
+		static ObjGener* from(ParserNode* node);
+	public:
+		virtual std::vector<Mem::Object> gen_obj()=0;
+		virtual ~ObjGener() {}
+	};
 
+	class SingleObjGener final:public ObjGener
+	{
+	public:
+		SingleObjGener(ParserNode* n) :node(n) {}
+		std::vector<Mem::Object> gen_obj()override { return std::vector<Mem::Object>(1,node->execute()); }
+		~SingleObjGener() { delete node; }
+	private:
+		ParserNode* node;
+	};
+	class MultiObjGener final :public ObjGener
+	{
+	public:
+		MultiObjGener(std::vector<ParserNode*> &&_nodes) :nodes(std::move(_nodes)) {}
+		std::vector<Mem::Object> gen_obj()override;
+		~MultiObjGener();
+	private:
+		std::vector<ParserNode*> nodes;
+	};
+
+	class StructObjGener final :public ObjGener
+	{
+	public:
+		StructObjGener(type_code_index ty_c, ParserNode* _node);
+		std::vector<Mem::Object> gen_obj()override;
+		~StructObjGener() { delete node; }
+	private:
+		int len;
+		ParserNode* node;
+	};
 	//literal-const
 
 	class LConV :public ParserNode
@@ -114,7 +155,7 @@ namespace Mer
 	class FunctionCall :public ParserNode
 	{
 	public:
-		FunctionCall(FunctionBase * fun, const std::vector<ParserNode*>& exprs);
+		FunctionCall(FunctionBase * fun, std::vector<ParserNode*>&& exprs);
 		type_code_index get_type()override;
 		Mem::Object execute()override;
 		std::string to_string()override;
@@ -124,7 +165,7 @@ namespace Mer
 	private:
 		FunctionCall() {}
 		FunctionBase * func=nullptr;
-		std::vector<ParserNode*> argument;
+		std::vector<ObjGener*> argument;
 	};
 	class MemberFunctionCall :public ParserNode
 	{

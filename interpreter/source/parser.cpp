@@ -509,7 +509,7 @@ namespace Mer
 					delete ilist;
 					throw Error("type " + type_to_string(t) + " can not initialized by list");
 				}
-				expr = new FunctionCall(result->second, { ilist });
+				expr = new FunctionCall(result->second, std::vector<ParserNode*>{ ilist });
 				return;
 			}
 			// common condition 
