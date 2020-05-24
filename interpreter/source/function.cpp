@@ -91,13 +91,9 @@ Param* Mer::Parser::build_param()
 			type++;
 		}
 		auto name = new NamePart();
-		// decay to pointer.
-		if (name->is_array())
-		{
-			type++;
-			type_length = 1;
-		}
 		size_t pos = mem.push(type_length) - type_length;
+		if (name->is_array())
+			type++;
 		tsymbol_table->push(Id::get_value(name->get_id()), new VarIdRecorder(type, pos, es));
 		ret->push_new_param(type, pos);
 		delete name;
@@ -150,7 +146,7 @@ std::pair<std::string, Function*> Parser::_build_function()
 	return { name,ret };
 }
 
-void Mer::Parser::build_function(size_t rtype,std::string name)
+void Mer::Parser::build_function(size_t rtype, std::string name)
 {
 	current_function_rety = rtype;
 	this_namespace->sl_table->new_block();
@@ -162,7 +158,7 @@ void Mer::Parser::build_function(size_t rtype,std::string name)
 		if (name == "main")
 			throw Error("main function should not be declared!");
 		mem.end_block();
-		Function* ret = new Function(rtype,param);
+		Function* ret = new Function(rtype, param);
 		token_stream.match(SEMI);
 		this_namespace->set_new_func(name, ret);
 		ret->is_completed = false;
@@ -181,7 +177,7 @@ void Mer::Parser::build_function(size_t rtype,std::string name)
 
 		auto func = func_recorder->find(param_feature);
 		// if the function has been declared.
-		if (func != nullptr&&func->is_completed==false)
+		if (func != nullptr && func->is_completed == false)
 		{
 			// create a function and return it.
 			Function* temp = static_cast<Function*>(func);
@@ -312,8 +308,8 @@ Mem::Object Mer::Function::run(const std::vector<Mem::Object>& objs)
 {
 	mem.new_func(off);
 	size_t arg_count = objs.size();
-	for (size_t i = 0; i <arg_count ; i++)
-		mem[mem.get_current()+i] = objs[i];
+	for (size_t i = 0; i < arg_count; i++)
+		mem[mem.get_current() + i] = objs[i];
 	size_t tmp = *pc;
 	for (*pc = 0; *pc < stmts.size(); ++ * pc)
 		stmts[*pc]->execute();
@@ -356,7 +352,7 @@ bool Mer::InitKey::operator<(const InitKey& init_key) const
 
 bool Mer::compare_param_feature(const std::vector<type_code_index>& p1, const std::vector<type_code_index>& p2)
 {
-	if (p1.size() != p2.size()) 
+	if (p1.size() != p2.size())
 		return p1.size() < p2.size();
 	auto sz = p1.size();
 	for (std::vector<type_code_index>::size_type i = 0; i < sz; i++)
@@ -374,7 +370,7 @@ std::string Mer::param_feature_to_string(const ParamFeature& pf)
 	std::string ret = "(";
 	for (int i = 0; i < (int)pf.size() - 1; i++)
 	{
-		
+
 		ret += type_to_string(pf[i]) + ',';
 	}
 	ret += type_to_string(pf.back()) + ')';

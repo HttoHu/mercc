@@ -226,7 +226,7 @@ namespace Mer
 				{
 					auto v = static_cast<LConV*>(subscript);
 					// skip arr info
-					index = Mem::get_raw<int>(v->execute()) + 1;
+					index = Mem::get_raw<int>(v->execute());
 					// get element type;
 					auto ret = new Variable(type, arr->get_pos() + index);
 					delete arr;
@@ -235,7 +235,7 @@ namespace Mer
 				}
 				else
 				{
-					auto ret = new ContainerIndex(type, arr->get_pos() + 1, subscript);
+					auto ret = new ContainerIndex(type, arr->get_pos(), subscript);
 					delete arr;
 					return ret;
 				}

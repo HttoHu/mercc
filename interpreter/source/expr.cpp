@@ -616,12 +616,12 @@ namespace Mer
 	}
 
 	Mem::Object ArrayDecay::execute() {
-		return std::make_shared<Mem::Pointer>(pos + mem.get_current()+1);
+		return std::make_shared<Mem::Pointer>(pos + mem.get_current());
 	}
 
 	Mem::Object GloArrayDecay::execute()
 	{
-		return std::make_shared<Mem::Pointer>(pos+1);
+		return std::make_shared<Mem::Pointer>(pos);
 	}
 
 }

@@ -262,28 +262,6 @@ namespace Mer
 		return std::make_shared<AnyObj>(obj);
 	}
 
-	Mem::Object Mer::Mem::Array::operator[](Object index)
-	{
-		int i = Mem::get_raw<int>(index);
-		if (i >= length)
-		{
-			throw std::runtime_error("array overflow!");
-		}
-		return mem[pos + i + 1 + mem.get_current()];
-	}
-
-	Mem::Object Mem::Array::clone() const
-	{
-		return std::make_shared<Array>(type, pos, length);
-	}
-
-	Mem::Object Mem::Value::Convert(type_code_index type)
-	{
-		std::string ls = type_to_string((BasicType)get_type());
-		std::string rs = type_to_string(BasicType(type));
-		throw Error("convert: syntax error from " + ls + " to " + rs);
-	}
-
 	Mem::Object Mem::ObjList::clone() const
 	{
 		std::vector<Object> vec;
@@ -293,20 +271,6 @@ namespace Mer
 		}
 		return std::make_shared<ObjList>(std::move(vec), type_code);
 	}
-
-	Mem::Object Mer::Mem::GArray::operator[](Object index)
-	{
-		int i = Mem::get_raw<int>(index);
-		if (i >= length)
-		{
-			throw std::overflow_error("array overflow!");
-		}
-		return mem[pos + i + 1u];
-	}
-
-	Mem::Object Mem::GArray::clone() const
-	{
-		return std::make_shared<GArray>(type, pos, length);
-	}
-
 }
+
+

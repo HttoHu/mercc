@@ -555,7 +555,6 @@ namespace Mer
 
 	LocalVarDecl::LocalVarDecl(std::vector<VarDeclUnit*>& vec, type_code_index t) :type(t)
 	{
-		obj_len = Mem::get_type_length(t);
 		for (const auto& a : vec)
 			sum += a->get_size();
 		pos = mem.push(sum) - sum;
@@ -585,7 +584,6 @@ namespace Mer
 		std::vector<ParserNode*> arr;
 		if (a->get_size() != 1)
 		{
-
 			auto exprs_info = a->get_expr();
 			if (typeid(*exprs_info) == typeid(InitList))
 				arr = static_cast<InitList*>(a->get_expr())->exprs();
@@ -600,12 +598,7 @@ namespace Mer
 			}
 			// the info of the array.
 
-			if (a->arr())
-			{
-				auto array_info = new LConV(std::make_shared<Mem::Array>(type, c_pos, arr.size()), type);
-				arr.push_back(array_info);
-			}
-			else
+			if (! (a->arr()))
 				// if it is a structure the size is one more than original length, because if the size is 1, 
 				// it will be regarded as a single variable.
 				sum--;
@@ -614,7 +607,6 @@ namespace Mer
 			arr.push_back(a->get_expr());
 		}
 		writers.push_back(UptrPNode(new VarWriter(std::move(arr), c_pos)));
-
 	}
 	GloVarDecl::GloVarDecl(std::vector<VarDeclUnit*>& vec, type_code_index t) :type(t)
 	{
@@ -665,16 +657,9 @@ namespace Mer
 				sum--;
 				return;
 			}
-			// the info of the array.
-
-			if (a->arr())
-			{
-				auto array_info = new LConV(std::make_shared<Mem::GArray>(type, c_pos, arr.size()), type);
-				arr.push_back(array_info);
-			}
-			else
-				// if it is a structure the size is one more than original length, because if the size is 1, 
-				// it will be regarded as a single variable.
+			// if it is a structure the size is one more than original length, because if the size is 1, 
+			// it will be regarded as a single variable.
+			if (!(a->arr()))
 				sum--;
 		}
 		else {

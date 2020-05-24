@@ -92,7 +92,7 @@ namespace Mer
 			virtual Object operator- (Object v) { throw Error("-: syntax error"); }
 			virtual Object operator* (Object v) { throw Error("* syntax error"); }
 			virtual Object operator/ (Object v) { throw Error("/: syntax error"); }
-			virtual Object Convert(type_code_index type);
+			virtual Object Convert(type_code_index type) { throw Error("Convert Error"); }
 			virtual Object get_negation()
 			{
 				throw Error("get_negation: syntax error");
@@ -446,11 +446,11 @@ namespace Mer
 			{
 				return BasicType::ARRAY;
 			}
+			Object clone()const override;
 			type_code_index get_ele_type()const
 			{
 				return type_code;
 			}
-			Mem::Object clone()const override;
 			type_code_index type_code;
 			std::vector<Object> elems;
 		};
@@ -600,32 +600,6 @@ namespace Mer
 			Mem::Object clone()const override;
 		private:
 			mer::any obj;
-		};
-		class Array :public Value
-		{
-		public:
-			Array(type_code_index _type, int _pos, int _length) :type(_type), pos(_pos), length(_length) {}
-			Mem::Object operator[](Object index)override;
-			Mem::Object clone()const override;
-			type_code_index get_type()const override { return type; }
-		private:
-			// element type
-			type_code_index type;
-			int pos;
-			int length;
-		};
-		class GArray :public Value
-		{
-		public:
-			GArray(type_code_index _type, int _pos, int _length) :type(_type), pos(_pos), length(_length) {}
-			Mem::Object operator[](Object index)override;
-			Mem::Object clone()const override;
-			type_code_index get_type()const override { return type; }
-		private:
-			// element type
-			type_code_index type;
-			int pos;
-			int length;
 		};
 		template<typename T>
 		T get_raw(Object obj)

@@ -17,8 +17,10 @@ namespace Mer {
 
 	Variable::Variable(WordRecorder* wr)
 	{
-		pos = static_cast<VarIdRecorder*>(wr)->pos;
+		pos = wr->get_pos();
 		type = wr->get_type();
+		if (wr->es == SARRAY)
+			is_arr = true;
 	}
 
 	type_code_index Variable::get_type()
@@ -202,6 +204,7 @@ namespace Mer {
 		if (type_len != 1)
 			indexs.back() = optimizer::optimize_bin_op(_make_l_conv(type_len), indexs.back(),BasicToken["*"]);
 		ret = optimizer::optimize_bin_op(ret, indexs.back(), BasicToken["+"]);
+		
 		return ret;
 	}
 	template<typename ARR_TYPE>
