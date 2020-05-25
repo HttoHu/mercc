@@ -161,8 +161,7 @@ namespace Mer {
 		{ "cast",new Token(CAST) },{ "true",new Token(TTRUE) },
 		{ "false",new Token(TFALSE) },
 		{ "string",new Token(STRING_DECL) },{ "bool",new Token(BOOL_DECL) },
-		{ "ref",new Token(REF) },{ "begin",new Token(BEGIN) },
-		{ "end",new Token(END) },{ "double",new Token(REAL_DECL) },{ "void",new Token(VOID_DECL) },{ "char",new Token(CHAR_DECL) },
+		{ "ref",new Token(REF) },{ "double",new Token(REAL_DECL) },{ "void",new Token(VOID_DECL) },{ "char",new Token(CHAR_DECL) },
 		{ "int",new Token(INTEGER_DECL) },{ "program",new Token(PROGRAM) },{ "nullptr",new Token(NULLPTR) }
 	};
 }
@@ -494,7 +493,7 @@ void Mer::TokenStream::match(Tag t)
 	else if (this_token()->get_tag() == t)
 		advance();
 	else
-		throw Error(this_token()->to_string() + " not match with " + TagStr[t]);
+		throw Error("expect "+ TagStr[t]+" but get "+this_token()->to_string() );
 }
 void TokenStream::remove_tokens()
 {

@@ -31,21 +31,26 @@ namespace Mer
 		{
 			WordRecorder* recorder = nullptr;
 			int len = unit.get_size();
-			if (unit.arr())
+			if (unit.get_size()!=1)
 			{
 				len--;
 				std::vector<ParserNode*> arr;
 				auto exprs_info = unit.get_expr();
 				if (typeid(*exprs_info) == typeid(InitList))
 					arr = static_cast<InitList*>(unit.get_expr())->exprs();
-				else
+				else if (typeid(*exprs_info) == typeid(EmptyList))
 					arr = static_cast<EmptyList*>(unit.get_expr())->exprs();
+				else
+					throw Error("unsupported grammar!");
 				for (auto & it : arr)
 					// it should be a const-literal, if you init the member with a var, the execute() will crash and print some error infomation which points to
 					// the place of the error.
 					init.push_back(it->execute());
-				// two means it it an array.
-				recorder = new GArrayRecorder(var_type, structure_content->be, unit.array_indexs);
+					// two means it it an array.
+				if(unit.arr())
+					recorder = new GArrayRecorder(var_type, structure_content->be, unit.array_indexs);
+				else
+					recorder = new GVarIdRecorder(var_type, structure_content->be);
 
 			}
 			else
@@ -170,10 +175,18 @@ namespace Mer
 			ret = _make_l_conv(result->get_pos());
 			break;
 		case ESymbol::SGARR:
-			ret = optimizer::optimize_bin_op(
-				get_array_bias<ArrayRecorder>(result),
-				_make_l_conv(result->get_pos()),
-				BasicToken["+"]);
+			if (token_stream.this_tag() == LSB)
+			{
+				ret = optimizer::optimize_bin_op(
+					get_array_bias<ArrayRecorder>(result),
+					_make_l_conv(result->get_pos()),
+					BasicToken["+"]);
+			}
+			else
+			{
+				ret_type++;
+				ret = new ArrayDecay(result->get_pos(), ret_type);
+			}
 			break;
 		default:
 			throw Error("unsupported grammar, @count_bias");
@@ -200,9 +213,10 @@ namespace Mer
 			throw Error("Id " + result2->first + " undefined");
 		return result2->second;
 	}
-	void UStructure::push_new_children(size_t t, std::string id_name, size_t count)
+	void UStructure::push_new_children(type_code_index t, std::string id_name, size_t count)
 	{
-		type_structure.push_back(t);
+		for (int i = 0; i < count; i++)
+			type_structure.push_back(t);
 		mapping.insert({ id_name,be += count });
 		STMapping.insert({ id_name,t });
 	}

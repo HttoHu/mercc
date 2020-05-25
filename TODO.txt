@@ -4,7 +4,10 @@ OK. enum. => int.
 2. struct 升级
 OK 参数传递 
 OK struct赋值.
--> get_structure 要改一下，数组要记录一下重复的
+OK get_structure 要改一下，数组要记录一下重复的
+OK Struct 套Struct
+OK struct里面的array不能正常decay.
+
 3. 位运算
 4. string库,stdio库
 5. math库,stdlib库

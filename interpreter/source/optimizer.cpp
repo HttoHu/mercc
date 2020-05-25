@@ -99,7 +99,7 @@ namespace Mer
 			}
 		}
 		std::map<Mer::Tag, Mem::Object(*) (const Mem::Object&, const Mem::Object&)> op_table{
-			{Mer::PLUS,add},{MINUS,sub},{MUL,mul},{DIV,div},{SADD,sadd},{SDIV,sdiv},{SADD,sadd},
+			{Mer::PLUS,add},{MINUS,sub},{MUL,mul},{DIV,div},{SMUL,smul},{SDIV,sdiv},{SADD,sadd},
 			{SSUB,ssub},{ASSIGN,assign},{EQ,equal},{NE,not_equal},{GT,gt},{GE,ge},{LT,lt},{LE,le},
 			{MOD,int_mod}
 		};
@@ -242,6 +242,5 @@ namespace Mer
 			}
 			return new SubScript(arr, subscript,type);
 		}
-
 	}
 }

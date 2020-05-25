@@ -143,7 +143,21 @@ namespace Mer
 			auto ustruct = find_ustructure_t(raw_type);
 			// find member index and type;
 			auto bias = count_bias(ustruct);
-			
+			// if the member is an array decay the customary method is invalid.
+			if (typeid(*bias.second) == typeid(ArrayDecay))
+			{
+				if (result->global())
+				{
+					auto glo_arr_decay = new GloArrayDecay(bias.second->get_pos() + result->get_pos(),bias.first);
+					delete bias.second;
+					delete result;
+					return glo_arr_decay;
+				}
+				static_cast<ArrayDecay*>(bias.second)->reset_pos(bias.second->get_pos() + result->get_pos());
+				// Don't worry about exception safty, because when an exception throws the program will end.
+				delete result;
+				return bias.second;
+			}
 			return new MemberIndex(result, bias.second,bias.first);
 		}
 		return result;

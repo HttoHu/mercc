@@ -40,7 +40,8 @@ namespace Mer
 		{
 			return "<empty_node>";
 		}
-		virtual bool constant()const
+		// to distinguish some global variables or arrays and so on... 
+		virtual bool global()const
 		{
 			return false;
 		}

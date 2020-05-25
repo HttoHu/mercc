@@ -83,6 +83,7 @@ namespace Mer
 		ContainerGloIndex(size_t _pos, type_code_index _type,ParserNode* _expr) :pos(_pos),type(_type), expr(_expr) {}
 		size_t get_pos()override;
 		Mem::Object execute()override;
+		bool global()const override { return true; }
 		type_code_index get_type()override{return type;}
 		ParserNode* clone()override { return new ContainerGloIndex(pos, type, expr->clone()); }
 		~ContainerGloIndex() { delete expr; }
@@ -190,7 +191,7 @@ namespace Mer
 		}
 		std::string to_string()override { return tree->to_string(); }
 		ParserNode* root() { return tree; }
-		bool constant()const override
+		bool global()const override
 		{
 			return false;
 		}
@@ -275,6 +276,8 @@ namespace Mer
 		ParserNode* clone() {
 			return new ArrayDecay(pos,type);
 		}
+		size_t get_pos()override { return pos; }
+		void reset_pos(int np) { pos = np; }
 	private:
 		type_code_index type;
 		int pos;
@@ -284,6 +287,7 @@ namespace Mer
 		GloArrayDecay(int p, type_code_index ty) :pos(p), type(ty) { }
 		type_code_index get_type()override { return type; }
 		Mem::Object execute()override;
+		bool global()const override { return true; }
 		ParserNode* clone() {
 			return new ArrayDecay(pos, type);
 		}

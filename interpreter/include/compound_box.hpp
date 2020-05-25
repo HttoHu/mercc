@@ -49,7 +49,7 @@ namespace Mer
 	public:
 		using SIM=std::map<std::string, int>;
 		// add a new array member/or member;
-		void push_new_children(size_t t, std::string id_name, size_t count=1);
+		void push_new_children(type_code_index t, std::string id_name, size_t count=1);
 		// first: member type second: member pos
 		std::pair<type_code_index, size_t > get_member_info(std::string member_name);
 		std::vector<Mem::Object> init();

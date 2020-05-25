@@ -104,6 +104,7 @@ namespace Mer
 		type_code_index get_type()override{return type;}
 		size_t get_pos()override{return pos;}
 		Mem::Object execute()override{return mem[pos];}
+		bool global()const override { return true; }
 		ParserNode* clone()override { return new GVar(type, pos); }
 	private:
 		type_code_index type;
