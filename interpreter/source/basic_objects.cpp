@@ -92,7 +92,7 @@ namespace Mer
 		}
 	}
 
-	Mem::Object Mem::Int::operator=(Object v)
+	Mem::Object Mem::Int::operator=(const Object & v)
 	{
 		auto tmp = v;
 		value = std::static_pointer_cast<Int>(v)->value;
@@ -119,7 +119,7 @@ namespace Mer
 		}
 	}
 
-	Mem::Object Mem::Double::operator=(Object v) {
+	Mem::Object Mem::Double::operator=(const Object & v) {
 
 		value = std::static_pointer_cast<Double>(v)->value;
 		return Convert(Mem::DOUBLE);
@@ -162,38 +162,38 @@ namespace Mer
 	}
 
 
-	Mem::Object Mem::Pointer::operator=(Object v)
+	Mem::Object Mem::Pointer::operator=(const Object & v)
 	{
 		add = std::static_pointer_cast<Pointer> (v)->add;
 		return std::make_shared<Pointer>(add);
 	}
 
-	Mem::Object Mem::Pointer::operator==(Object v)
+	Mem::Object Mem::Pointer::operator==(const Object & v)
 	{
 		return std::make_shared<Mem::Bool>(std::static_pointer_cast<Pointer>(v)->add == add);
 	}
 
-	Mem::Object Mem::Pointer::operator!=(Object v)
+	Mem::Object Mem::Pointer::operator!=(const Object & v)
 	{
 		return std::make_shared<Mem::Bool>(std::static_pointer_cast<Pointer>(v)->add != add);
 	}
 
-	Mem::Object Mem::Pointer::operator+(Object v)
+	Mem::Object Mem::Pointer::operator+(const Object & v)
 	{
 		return std::make_shared<Pointer>(add + *(int*)v->get_raw_data());
 	}
 
-	Mem::Object Mem::Pointer::operator-(Object v)
+	Mem::Object Mem::Pointer::operator-(const Object & v)
 	{
 		return std::make_shared<Pointer>(add - *(int*)v->get_raw_data());
 	}
 
-	Mem::Object Mem::Pointer::operator+=(Object v)
+	Mem::Object Mem::Pointer::operator+=(const Object&v)
 	{
 		return std::make_shared<Pointer>(add += *(int*)v->get_raw_data());
 	}
 
-	Mem::Object Mem::Pointer::operator-=(Object v)
+	Mem::Object Mem::Pointer::operator-=(const Object & v)
 	{
 		return std::make_shared<Pointer>(add -= *(int*)v->get_raw_data());
 	}
@@ -218,12 +218,12 @@ namespace Mer
 		}
 	}
 
-	Mem::Object Mem::Pointer::operator[](Object v)
+	Mem::Object Mem::Pointer::operator[](const Object & v)
 	{
 		return Mer::mem[std::static_pointer_cast<Int>(v)->get_value() + add];
 	}
 
-	Mem::Object Mem::String::operator[](Object v)
+	Mem::Object Mem::String::operator[](const Object & v)
 	{
 		return std::make_shared<Char>(&str[std::static_pointer_cast<Int>(v)->get_value()]);
 	}
@@ -233,7 +233,7 @@ namespace Mer
 		return Mem::type_to_string(Mem::BasicType(type_code));
 	}
 
-	Mem::Object Mer::Mem::Char::operator=(Object v)
+	Mem::Object Mer::Mem::Char::operator=(const Object & v)
 	{
 		auto tmp = v;
 		*value = *std::static_pointer_cast<Char>(v)->value;

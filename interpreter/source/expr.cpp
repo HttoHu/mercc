@@ -40,7 +40,10 @@ namespace Mer
 	ParserNode* Expr::assign()
 	{
 		auto result = conditional_expr();
-		while (token_stream.this_tag() == ASSIGN || token_stream.this_tag() == SADD || token_stream.this_tag() == SSUB || token_stream.this_tag() == SMUL || token_stream.this_tag() == SDIV)
+		std::set<Tag> assign_operator{
+			ASSIGN,SADD,SSUB,SMUL,SDIV,SRS,SLS,SBAND,SBOR,SBXOR
+		};
+		while (assign_operator.count(token_stream.this_tag()))
 		{
 			auto tok = token_stream.this_token();
 			token_stream.next();
@@ -54,13 +57,14 @@ namespace Mer
 		if (token_stream.this_tag() == QUE)
 		{
 			token_stream.next();
-			auto true_cond_expr = assign();
+			auto true_cond_expr = and_or();
 			token_stream.match(COLON);
-			auto false_cond_expr = assign();
+			auto false_cond_expr = and_or();
 			return new ConditionalOperator(result, true_cond_expr, false_cond_expr);
 		}
 		return result;
 	}
+
 	Mer::ParserNode* Expr::and_or()
 	{
 		auto result = nexpr();
@@ -74,23 +78,9 @@ namespace Mer
 		return result;
 
 	}
-
-	ParserNode* Expr::expr()
-	{
-		auto result = term();
-
-		while (token_stream.this_token()->get_tag() == PLUS || token_stream.this_token()->get_tag() == MINUS)
-		{
-			auto tok = token_stream.this_token();
-			token_stream.next();
-			result = optimizer::optimize_bin_op(result, term(), tok);
-		}
-		return result;
-	}
-
 	ParserNode* Expr::nexpr()
 	{
-		auto result = expr();
+		auto result = l_r_shift();
 		while (1)
 		{
 			auto tok = token_stream.this_token();
@@ -108,10 +98,40 @@ namespace Mer
 			default:
 				return result;
 			}
-			result = optimizer::optimize_bin_op(result, expr(),tok);
+			result = optimizer::optimize_bin_op(result, l_r_shift(), tok);
 		}
 		return result;
 	}
+
+	ParserNode* Expr::l_r_shift()
+	{
+		auto result = expr();
+		while (token_stream.this_tag() == LSHIFT || token_stream.this_tag() == RSHIFT)
+		{
+			is_bool = true;
+			auto tok = token_stream.this_token();
+			token_stream.next();
+			result = optimizer::optimize_bin_op(result, l_r_shift(), tok);
+		}
+		return result;
+
+	}
+
+
+	ParserNode* Expr::expr()
+	{
+		auto result = term();
+
+		while (token_stream.this_token()->get_tag() == PLUS || token_stream.this_token()->get_tag() == MINUS)
+		{
+			auto tok = token_stream.this_token();
+			token_stream.next();
+			result = optimizer::optimize_bin_op(result, term(), tok);
+		}
+		return result;
+	}
+
+
 
 	ParserNode* Expr::term()
 	{

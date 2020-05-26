@@ -208,7 +208,7 @@ namespace Mer
 				a = obj->clone();
 			}
 		}
-		Mem::Object Vector::operator[](Mem::Object index)
+		Mem::Object Vector::operator[](const Mem::Object &index)
 		{
 			return content[Mem::get_raw<int>(index)];
 		}
@@ -314,7 +314,7 @@ namespace Mer
 			}
 		}
 
-		Mem::Object Deque::operator[](Mem::Object index)
+		Mem::Object Deque::operator[](const Mem::Object& index)
 		{
 			return content[Mem::get_raw<int>(index)];
 		}

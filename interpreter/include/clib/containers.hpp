@@ -41,7 +41,7 @@ namespace Mer
 			Vector(int count, Mem::Object obj);
 			Vector(const std::vector<Mem::Object>& objs) :content(objs) {}
 			Vector(std::vector<Mem::Object>&& objs) :content(objs) {}
-			Mem::Object operator[](Mem::Object index)override;
+			Mem::Object operator[](const Mem::Object& index)override;
 			Mem::Object clone()const override;
 			std::vector<Mem::Object> content;
 		};
@@ -53,7 +53,7 @@ namespace Mer
 			Deque(int count, Mem::Object obj);
 			Deque(const std::deque<Mem::Object>& objs) :content(objs) {}
 			Deque(std::deque<Mem::Object>&& objs) :content(objs) {}
-			Mem::Object operator[](Mem::Object index)override;
+			Mem::Object operator[](const Mem::Object &index)override;
 			Mem::Object clone()const override;
 			std::deque<Mem::Object> content;
 

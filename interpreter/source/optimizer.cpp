@@ -48,6 +48,22 @@ namespace Mer
 			Mem::Object equal(const Mem::Object& lhs, const Mem::Object& rhs) {
 				return lhs->operator==(rhs);
 			}
+
+			Mem::Object lshift(const Mem::Object& lhs, const Mem::Object& rhs) {
+				return lhs->operator<<(rhs);
+			}
+			Mem::Object rshift(const Mem::Object& lhs, const Mem::Object& rhs) {
+				return lhs->operator>>(rhs);
+			}
+			Mem::Object band(const Mem::Object& lhs, const Mem::Object& rhs) {
+				return lhs->operator&(rhs);
+			}
+			Mem::Object bor(const Mem::Object& lhs, const Mem::Object& rhs) {
+				return lhs->operator|(rhs);
+			}
+			Mem::Object bxor(const Mem::Object& lhs, const Mem::Object& rhs) {
+				return lhs->operator^(rhs);
+			}
 			Mem::Object not_equal(const Mem::Object& lhs, const Mem::Object& rhs) {
 				return lhs->operator!=(rhs);
 			}
@@ -101,7 +117,7 @@ namespace Mer
 		std::map<Mer::Tag, Mem::Object(*) (const Mem::Object&, const Mem::Object&)> op_table{
 			{Mer::PLUS,add},{MINUS,sub},{MUL,mul},{DIV,div},{SMUL,smul},{SDIV,sdiv},{SADD,sadd},
 			{SSUB,ssub},{ASSIGN,assign},{EQ,equal},{NE,not_equal},{GT,gt},{GE,ge},{LT,lt},{LE,le},
-			{MOD,int_mod}
+			{MOD,int_mod},{LSHIFT,lshift},{RSHIFT,rshift},{BOR,bor},{BAND,band}
 		};
 		std::map<Mer::Tag, Mem::Object(*)(const Mem::Object&)> unary_op_table{
 			{Mer::MINUS,get_neg},{Mer::PLUS,trans},{NOT,get_neg},{INC,int_front_inc},{DEC,int_front_dec},
@@ -130,6 +146,21 @@ namespace Mer
 				{
 				case MOD:
 					ret = std::make_shared<Mem::Int>(*(int*)left_v->get_raw_data() % *(int*)right_v->get_raw_data());
+					break;
+				case RSHIFT:
+					ret = left_v->operator>>(right_v);
+					break;
+				case LSHIFT:
+					ret = left_v->operator<<(right_v);
+					break;
+				case BOR:
+					ret = left_v->operator|(right_v);
+					break;
+				case BAND:
+					ret = left_v->operator&(right_v);
+					break;
+				case BXOR:
+					ret = left_v->operator^(right_v);
 					break;
 				case SADD:
 					ret = left_v->operator+=(right_v);

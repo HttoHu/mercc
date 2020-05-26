@@ -126,7 +126,7 @@ namespace Mer
 		Set::Set(type_code_index element_type) :data(find_compare_operator(element_type))
 		{
 		}
-		Mem::Object Set::operator[](Mem::Object index)
+		Mem::Object Set::operator[](const Mem::Object &index)
 		{
 			auto ret = data.find(index);
 			return *ret;
@@ -137,7 +137,7 @@ namespace Mer
 		}
 		Map::Map(type_code_index key) :data(find_compare_operator(key)) {}
 
-		Mem::Object Map::operator[](Mem::Object index)
+		Mem::Object Map::operator[](const Mem::Object&index)
 		{
 			auto ret = data.find(index);
 			return ret->second;

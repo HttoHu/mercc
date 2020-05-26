@@ -32,7 +32,7 @@ namespace Mer {
 				throw LexerError("invalid oct number");
 			return ch - '0';
 		}
-		Token* integer_to_token(unsigned long long num, const std::string &str, size_t &pos) {
+		Token* integer_to_token(unsigned long long num, const std::string& str, size_t& pos) {
 			// suffix count u is unsigned such 112U. For example 1234LLU, l_count is 2, u_count is 1.
 			int u_count = 0;
 			int l_count = 0;
@@ -49,9 +49,9 @@ namespace Mer {
 			}
 			return new Integer(num);
 		}
-		Token* hex_to_dec(const std::string &str, size_t& pos) {
+		Token* hex_to_dec(const std::string& str, size_t& pos) {
 			long long ret = 0;
-			for (; pos<str.size(); pos++) {
+			for (; pos < str.size(); pos++) {
 				if (!is_good_hex_bit(str[pos]))
 					break;
 				ret *= 16;
@@ -60,9 +60,9 @@ namespace Mer {
 			// int32
 			return new Integer(ret);
 		}
-		Token* oct_to_dec(const std::string& str, size_t &pos) {
+		Token* oct_to_dec(const std::string& str, size_t& pos) {
 			long long ret = 0;
-			for (; pos<str.size(); pos++) {
+			for (; pos < str.size(); pos++) {
 				if (str[pos] < '0' || str[pos]>'7')
 					break;
 				ret *= 8;
@@ -82,7 +82,7 @@ namespace Mer {
 			while (isalnum(str[pos]) || str[pos] == '_') ret += str[pos++];
 			return ret;
 		}
-		bool match_str(const std::string &content, size_t &i, const std::string & str)
+		bool match_str(const std::string& content, size_t& i, const std::string& str)
 		{
 			while (content[i] == ' ')
 				i++;
@@ -90,7 +90,7 @@ namespace Mer {
 				if (str[j] != content[i++])
 					throw LexerError("lexer error");
 		}
-		void process_include(const std::string &content, size_t &i)
+		void process_include(const std::string& content, size_t& i)
 		{
 			match_str(content, i, "<");
 
@@ -107,12 +107,12 @@ namespace Mer {
 			result->second();
 		}
 
-		void preprocessor(const std::string &content, size_t &i)
+		void preprocessor(const std::string& content, size_t& i)
 		{
 			// skip #
 			i++;
 			std::string ins = retrive_word(content, i);
-			std::map<std::string, void(*)(const std::string &, size_t &)> sub_processor_dic{
+			std::map<std::string, void(*)(const std::string&, size_t&)> sub_processor_dic{
 				{ "include",process_include }
 			};
 			auto result = sub_processor_dic.find(ins);
@@ -135,6 +135,8 @@ namespace Mer {
 		{ MAKE,"make" },
 		{ GE,"GE" },{ GT,"GT" },{ LE,"LE" },{ LT,"LT" },{ EQ,"EQ" },{ NE,"NE" },
 		{ AND,"AND" },{ OR,"OR" },{ NOT,"NOT" },{ GET_ADD,"GET_ADD" },
+		{ LSHIFT,"LSHIFT"},{RSHIFT,"RSHIFT"},{BAND,"BAND"},{BOR,"BOR"},{BXOR,"BXOR"},
+		{ SLS,"SLS"},{SRS,"SRS"},{SBAND,"SBAND"},{SBOR,"SBOR"},{SBXOR,"SBXOR"},{INV,"INV"},
 		{ LPAREN,"LPAREN" },{ RPAREN,"RPAREN" },{ LSB,"LSB" },{ RSB,"RSB" },
 		{ DOT,"DOT" },{ BEGIN,"BEGIN" },{ END,"END" },
 		{ SEMI,"SEMI" },{ ASSIGN,"ASSIGN" },{ SADD,"SADD" },{ CASE,"CASE" },
@@ -144,10 +146,12 @@ namespace Mer {
 	TokenMap	BasicToken{
 		{ "#",new Token(SHARP) },
 		{"++",new Token(INC)},{"--",new Token(DEC)},
-		{ "+",new Token(PLUS) },{ "-",new Token(MINUS) },{ "*",new Token(MUL) },{ "/",new Token(DIV) },{"%",new Token (MOD)},
+		{ "+",new Token(PLUS) },{ "-",new Token(MINUS) },{ "*",new Token(MUL) },{ "/",new Token(DIV) },{"%",new Token(MOD)},
 		{ "=",new Token(ASSIGN) },
 		{ "+=",new Token(SADD) },{ "-=",new Token(SSUB) },{ "*=",new Token(SMUL) },{ "/=",new Token(SDIV) },
 		{ "<",new Token(LT) },{ "<=",new Token(LE) },{ ">",new Token(GT) },{ ">=",new Token(GE) },{ "==",new Token(EQ) },
+		{"<<",new Token(LSHIFT)},{">>",new Token(RSHIFT)},{"&",new Token(BAND)},{"|",new Token(BOR)},{"^",new Token(BXOR)},{"~",new Token(INV)},
+		{"<<=",new Token(SLS)},{">>=",new Token(SRS)},{"&=",new Token(SBAND)},{"|=",new Token(SBOR)},{"^=",new Token(SBXOR)},
 		{ "!=",new Token(NE) },{ "!",new Token(NOT) },{ "&&",new Token(AND) },{ "||",new Token(OR) },{ ":",new Token(COLON) },
 		{ ",",new Token(COMMA) },{ ";",new Token(SEMI) },{ ".",new Token(DOT) },{ "&",new Token(GET_ADD) },{ "->",new Token(PTRVISIT) },
 		{ "[",new Token(LSB) },{ "]",new Token(RSB) },{ "(",new Token(LPAREN) },{ ")",new Token(RPAREN) },
@@ -195,12 +199,12 @@ Token* Mer::parse_number(const std::string& str, size_t& pos)
 {
 	unsigned long long ret = 0;
 	// hex or oct number.
-	if (pos<str.size() && str[pos] == '0')
+	if (pos < str.size() && str[pos] == '0')
 	{
 		pos++;
 		if (pos < str.size() && tolower(str[pos]) == 'x')
 			return num_process::hex_to_dec(str, ++pos);
-		if(str[pos]!='.')
+		if (str[pos] != '.')
 			return num_process::oct_to_dec(str, pos);
 	}
 	// integer part
@@ -360,13 +364,14 @@ void Mer::build_token_stream(const std::string& content) {
 				token_stream.push_back(BasicToken[std::string{ cur_char,'=' }]);
 			}
 			//->
-			else if (cur_char == '-'&& i + 1 < content.size() && content[i + 1] == '>')
+			else if (cur_char == '-' && i + 1 < content.size() && content[i + 1] == '>')
 			{
 				i++; token_stream.push_back(BasicToken[std::string{ cur_char,'>' }]);
 			}
 			else
 				token_stream.push_back(BasicToken[std::string(1, cur_char)]);
 			break;
+		case '~':
 		case '>':
 		case '<':
 		case '=':
@@ -378,6 +383,12 @@ void Mer::build_token_stream(const std::string& content) {
 			{
 				str += content[++i];
 			}
+			else if (i + 1 < content.size() && (cur_char == '<' || cur_char == '>') && cur_char == content[i + 1])
+			{
+				str += content[++i];
+				if (i + 1 < content.size() && content[i] == '=')
+					str += content[++i];
+			}
 			token_stream.push_back(BasicToken[str]);
 			break;
 		}
@@ -388,6 +399,7 @@ void Mer::build_token_stream(const std::string& content) {
 		case '.':
 		case '[':
 		case ']':
+		case '^':
 		case ')':
 			token_stream.push_back(BasicToken[std::string(1, content[i])]);
 			break;
@@ -455,7 +467,7 @@ std::string Mer::get_this_id_string_value()
 	token_stream.match(ID);
 	return ret;
 }
-TokenStream & Mer::TokenStream::operator=(const TokenStream & tok_stream)
+TokenStream& Mer::TokenStream::operator=(const TokenStream& tok_stream)
 {
 	content.assign(tok_stream.content.begin(), tok_stream.content.end());
 	pos = 0;
@@ -493,7 +505,7 @@ void Mer::TokenStream::match(Tag t)
 	else if (this_token()->get_tag() == t)
 		advance();
 	else
-		throw Error("expect "+ TagStr[t]+" but get "+this_token()->to_string() );
+		throw Error("expect " + TagStr[t] + " but get " + this_token()->to_string());
 }
 void TokenStream::remove_tokens()
 {

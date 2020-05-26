@@ -46,7 +46,7 @@ namespace Mer
 			Set(type_code_index element_type,const std::vector<Mem::Object>& vec);
 			Set(type_code_index element_type);
 			static type_code_index type_code;
-			Mem::Object operator[](Mem::Object)override;
+			Mem::Object operator[](const Mem::Object&)override;
 			Mem::Object clone()const override;
 			SetContent data;
 		};
@@ -56,7 +56,7 @@ namespace Mer
 			Map(const MapContent& sc) :data(sc) {}
 			Map(type_code_index key);
 			static type_code_index type_code;
-			Mem::Object operator[](Mem::Object)override;
+			Mem::Object operator[](const Mem::Object&)override;
 			Mem::Object clone()const override;
 			MapContent data;
 		};

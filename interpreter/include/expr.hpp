@@ -204,8 +204,11 @@ namespace Mer
 		ParserNode* assign();
 		ParserNode* conditional_expr();
 		ParserNode* and_or();
-		ParserNode* expr();
 		ParserNode* nexpr();
+		ParserNode* l_r_shift();
+
+		ParserNode* expr();
+
 		ParserNode* term();
 		ParserNode* member_visit();
 		ParserNode* subscript();
