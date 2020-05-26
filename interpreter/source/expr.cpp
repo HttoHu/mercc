@@ -53,30 +53,86 @@ namespace Mer
 	}
 	ParserNode * Expr::conditional_expr()
 	{
-		auto result = and_or();
+		auto result = parse_or();
 		if (token_stream.this_tag() == QUE)
 		{
 			token_stream.next();
-			auto true_cond_expr = and_or();
+			auto true_cond_expr = parse_or();
 			token_stream.match(COLON);
-			auto false_cond_expr = and_or();
+			auto false_cond_expr = parse_or();
 			return new ConditionalOperator(result, true_cond_expr, false_cond_expr);
 		}
 		return result;
 	}
 
-	Mer::ParserNode* Expr::and_or()
+	Mer::ParserNode* Expr::parse_or()
 	{
-		auto result = nexpr();
-		while (token_stream.this_tag() == AND || token_stream.this_tag() == OR)
+		auto result = parse_and();
+		while (token_stream.this_tag() == OR)
 		{
 			is_bool = true;
 			auto tok = token_stream.this_token();
 			token_stream.next();
-			result = new LogicalBinOp(result, tok, nexpr());
+			result = new LogicalBinOp(result, tok, parse_and());
 		}
 		return result;
-
+	}
+	Mer::ParserNode* Expr::parse_and()
+	{
+		auto result = bit_or();
+		while (token_stream.this_tag() == AND)
+		{
+			is_bool = true;
+			auto tok = token_stream.this_token();
+			token_stream.next();
+			result = new LogicalBinOp(result, tok, bit_or());
+		}
+		return result;
+	}
+	ParserNode* Expr::bit_or()
+	{
+		auto result = parse_xor();
+		while (token_stream.this_tag() == BOR)
+		{
+			auto tok = token_stream.this_token();
+			token_stream.next();
+			result = optimizer::optimize_bin_op(result,parse_xor(),tok);
+		}
+		return result;
+	}
+	ParserNode* Expr::parse_xor()
+	{
+		auto result = bit_and();
+		while (token_stream.this_tag() == BXOR)
+		{
+			auto tok = token_stream.this_token();
+			token_stream.next();
+			result = optimizer::optimize_bin_op(result, bit_and(), tok);
+		}
+		return result;
+	}
+	ParserNode* Expr::bit_and()
+	{
+		auto result = equal();
+		while (token_stream.this_tag() == BAND)
+		{
+			auto tok = token_stream.this_token();
+			token_stream.next();
+			result = optimizer::optimize_bin_op(result, equal(), tok);
+		}
+		return result;
+	}
+	ParserNode* Expr::equal()
+	{
+		auto result = nexpr();
+		while (token_stream.this_tag() == EQ|| token_stream.this_tag()==NE)
+		{
+			is_bool = true;
+			auto tok = token_stream.this_token();
+			token_stream.next();
+			result = optimizer::optimize_bin_op(result, nexpr(), tok);
+		}
+		return result;
 	}
 	ParserNode* Expr::nexpr()
 	{
@@ -86,8 +142,6 @@ namespace Mer
 			auto tok = token_stream.this_token();
 			switch (tok->get_tag())
 			{
-			case EQ:
-			case NE:
 			case GE:
 			case GT:
 			case LE:

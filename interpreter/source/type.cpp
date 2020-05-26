@@ -15,7 +15,7 @@ namespace Mer
 	{
 		//var_def
 		const std::map<type_code_index, Mem::Type*> _init_type_map{
-			{ BasicType::INT,new Type("int",BasicType::INT,{ BasicType::INT,BasicType::BOOL,BasicType::DOUBLE })},
+			{ BasicType::INT,new Type("int",BasicType::INT,{ BasicType::INT,BasicType::BOOL,BasicType::DOUBLE,BasicType::CHAR })},
 			{ BasicType::DOUBLE,new Type("double",BasicType::DOUBLE,{ BasicType::INT,BasicType::BOOL,BasicType::DOUBLE })},
 			{ BasicType::BOOL,new Type("bool",BasicType::BOOL,{ BasicType::INT,BasicType::BOOL,BasicType::DOUBLE })},
 			{ BasicType::STRING,new Type("string",BasicType::STRING,{ 11,BasicType::STRING }) },

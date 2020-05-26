@@ -203,7 +203,14 @@ namespace Mer
 		type_code_index  expr_type=0;
 		ParserNode* assign();
 		ParserNode* conditional_expr();
-		ParserNode* and_or();
+		ParserNode* parse_and();
+		ParserNode* parse_or();
+		ParserNode* bit_or();
+		
+		ParserNode* parse_xor();
+		
+		ParserNode* bit_and();
+		ParserNode* equal();
 		ParserNode* nexpr();
 		ParserNode* l_r_shift();
 

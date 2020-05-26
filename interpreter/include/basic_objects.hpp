@@ -580,19 +580,19 @@ namespace Mer
 				return std::make_shared<Bool>(*value != *std::static_pointer_cast<Char>(v)->value);
 			}
 			Object operator<< (const Object& v)override {
-				return std::make_shared<Mem::Char>(*value << std::static_pointer_cast<Int>(v)->get_value());
+				return std::make_shared<Mem::Char>(*value << std::static_pointer_cast<Char>(v)->get_value());
 			}
 			Object operator>> (const Object& v)override {
-				return std::make_shared<Mem::Char>(*value >> std::static_pointer_cast<Int>(v)->get_value());
+				return std::make_shared<Mem::Char>(*value >> std::static_pointer_cast<Char>(v)->get_value());
 			}
 			Object operator& (const Object& v)override {
-				return std::make_shared<Mem::Char>(*value & std::static_pointer_cast<Int>(v)->get_value());
+				return std::make_shared<Mem::Char>(*value & std::static_pointer_cast<Char>(v)->get_value());
 			}
 			Object operator| (const Object& v)override {
-				return std::make_shared<Mem::Char>(*value | std::static_pointer_cast<Int>(v)->get_value());
+				return std::make_shared<Mem::Char>(*value | std::static_pointer_cast<Char>(v)->get_value());
 			}
 			Object operator^ (const Object& v)override {
-				return std::make_shared<Mem::Char>(*value ^ std::static_pointer_cast<Int>(v)->get_value());
+				return std::make_shared<Mem::Char>(*value ^ std::static_pointer_cast<Char>(v)->get_value());
 			}
 			Object clone()const override
 			{
