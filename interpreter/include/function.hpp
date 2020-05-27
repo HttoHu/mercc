@@ -65,7 +65,7 @@ namespace Mer
 		}
 		virtual type_code_index get_type() { return 0; }
 		// covert args' type in order to comply with params' type.
-		virtual Mem::Object run(const std::vector<Mem::Object>& objs) { return nullptr; }
+		virtual void run(const std::vector<Mem::Object>& objs) { }
 		std::vector<type_code_index> param_types;
 		bool is_check_type() { return check_param_type; }
 		std::string to_string(std::string name="no_name_func")const ;
@@ -82,7 +82,7 @@ namespace Mer
 		Function(type_code_index t, Param *p);
 		Function(type_code_index t);
 		Param *param=nullptr;
-		Mem::Object run(const std::vector<Mem::Object> &objs)override;
+		void run(const std::vector<Mem::Object> &objs)override;
 		type_code_index get_type()override { return type; }
 		std::vector<UptrPNode> stmts;
 		size_t* pc=new size_t(0);
@@ -97,14 +97,8 @@ namespace Mer
 	{
 	public:
 		SystemFunction(type_code_index t, _intern_func fun) :type(t), func(fun) {}
-		Mem::Object run(const std::vector<Mem::Object> &objs)override
-		{
-			return func(objs);
-		}
-		type_code_index get_type()override
-		{
-			return type;
-		}
+		void run(const std::vector<Mem::Object>& objs)override;
+		type_code_index get_type()override{return type;}
 		void check_param(const std::vector<type_code_index>& types)override;
 		void dnt_check_param()
 		{

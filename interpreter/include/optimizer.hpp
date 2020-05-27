@@ -38,7 +38,7 @@ namespace Mer
 	namespace optimizer
 	{
 		extern std::map<Mer::Tag, Mem::Object(*) (const Mem::Object&, const Mem::Object&)> op_table;
-		extern std::map<Mer::Tag, Mem::Object(*)(const Mem::Object&)> unary_op_table;
+		extern std::map<std::pair<Mer::Tag,type_code_index>, Mem::Object(*)(const Mem::Object&)> unary_op_table;
 		ParserNode* optimize_bin_op(ParserNode* left, ParserNode* right, Token* tok);
 		ParserNode* optimize_unary_op(ParserNode* left, Token* tok);
 		// try to obtain the address directly

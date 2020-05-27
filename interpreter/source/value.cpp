@@ -80,7 +80,8 @@ namespace Mer {
 			auto tmp_vec = it->gen_obj();
 			tmp.insert(tmp.end(), tmp_vec.begin(), tmp_vec.end());
 		}
-		return func->run(tmp);
+		func->run(tmp);
+		return nullptr;
 	}
 
 	std::string FunctionCall::to_string()
@@ -298,7 +299,6 @@ namespace Mer {
 		
 		std::string func_name = Id::get_value(token_stream.this_token());
 		// to check the param's type.
-
 		token_stream.match(ID);
 		std::vector<ParserNode*> exprs = parse_arguments();
 		ParamFeature pf;
@@ -425,7 +425,8 @@ namespace Mer {
 		{
 			obj_vec[i] = argument[i]->execute()->clone();
 		}
-		auto ret = func->run(obj_vec);
+		func->run(obj_vec);
+		auto ret = mem[0];
 		parents_vec.pop_back();
 		return ret;
 	}
@@ -513,5 +514,10 @@ namespace Mer {
 			return new StructObjGener(node->get_type(), node);
 		else
 			return new SingleObjGener(node);
+	}
+	std::vector<Mem::Object> SingleObjGener::gen_obj()
+	{
+		auto ret = node->execute()->clone();
+		return { ret };
 	}
 }

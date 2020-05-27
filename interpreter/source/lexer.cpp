@@ -134,9 +134,9 @@ namespace Mer {
 		{ PLUS,"PLUS" },{ MINUS,"MINUS" },{ MUL,"MUL" },{ DIV,"DIV" },{MOD,"MOD"},
 		{ MAKE,"make" },
 		{ GE,"GE" },{ GT,"GT" },{ LE,"LE" },{ LT,"LT" },{ EQ,"EQ" },{ NE,"NE" },
-		{ AND,"AND" },{ OR,"OR" },{ NOT,"NOT" },{ GET_ADD,"GET_ADD" },
+		{ AND,"AND" },{ OR,"OR" },{ NOT,"NOT" },{ GET_ADD,"GET_ADD" },{BNOT,"BNOT"},
 		{ LSHIFT,"LSHIFT"},{RSHIFT,"RSHIFT"},{BAND,"BAND"},{BOR,"BOR"},{BXOR,"BXOR"},
-		{ SLS,"SLS"},{SRS,"SRS"},{SBAND,"SBAND"},{SBOR,"SBOR"},{SBXOR,"SBXOR"},{INV,"INV"},
+		{ SLS,"SLS"},{SRS,"SRS"},{SBAND,"SBAND"},{SBOR,"SBOR"},{SBXOR,"SBXOR"},
 		{ LPAREN,"LPAREN" },{ RPAREN,"RPAREN" },{ LSB,"LSB" },{ RSB,"RSB" },
 		{ DOT,"DOT" },{ BEGIN,"BEGIN" },{ END,"END" },
 		{ SEMI,"SEMI" },{ ASSIGN,"ASSIGN" },{ SADD,"SADD" },{ CASE,"CASE" },
@@ -150,10 +150,10 @@ namespace Mer {
 		{ "=",new Token(ASSIGN) },
 		{ "+=",new Token(SADD) },{ "-=",new Token(SSUB) },{ "*=",new Token(SMUL) },{ "/=",new Token(SDIV) },
 		{ "<",new Token(LT) },{ "<=",new Token(LE) },{ ">",new Token(GT) },{ ">=",new Token(GE) },{ "==",new Token(EQ) },
-		{"<<",new Token(LSHIFT)},{">>",new Token(RSHIFT)},{"&",new Token(BAND)},{"|",new Token(BOR)},{"^",new Token(BXOR)},{"~",new Token(INV)},
+		{"<<",new Token(LSHIFT)},{">>",new Token(RSHIFT)},{"&",new Token(BAND)},{"|",new Token(BOR)},{"^",new Token(BXOR)},
 		{"<<=",new Token(SLS)},{">>=",new Token(SRS)},{"&=",new Token(SBAND)},{"|=",new Token(SBOR)},{"^=",new Token(SBXOR)},
-		{ "!=",new Token(NE) },{ "!",new Token(NOT) },{ "&&",new Token(AND) },{ "||",new Token(OR) },{ ":",new Token(COLON) },
-		{ ",",new Token(COMMA) },{ ";",new Token(SEMI) },{ ".",new Token(DOT) },{ "&",new Token(GET_ADD) },{ "->",new Token(PTRVISIT) },
+		{ "!=",new Token(NE) },{ "!",new Token(NOT) },{ "&&",new Token(AND) },{ "||",new Token(OR) },{"~",new Token(BNOT)}, { ":",new Token(COLON) },
+		{ ",",new Token(COMMA) },{ ";",new Token(SEMI) },{ ".",new Token(DOT) },{ "->",new Token(PTRVISIT) },
 		{ "[",new Token(LSB) },{ "]",new Token(RSB) },{ "(",new Token(LPAREN) },{ ")",new Token(RPAREN) },
 		{ "{",new Token(BEGIN) },{ "}",new Token(END) },{"?",new Token(QUE)},
 		{ "include",new Token(INCLUDE) },{ "namespace",new Token(NAMESPACE) },{ "struct",new Token(STRUCT) },{"enum",new Token(ENUM)},
@@ -195,7 +195,6 @@ TokenStream Mer::token_stream;
 
 
 Token* Mer::parse_number(const std::string& str, size_t& pos)
-
 {
 	unsigned long long ret = 0;
 	// hex or oct number.
@@ -386,7 +385,7 @@ void Mer::build_token_stream(const std::string& content) {
 			else if (i + 1 < content.size() && (cur_char == '<' || cur_char == '>') && cur_char == content[i + 1])
 			{
 				str += content[++i];
-				if (i + 1 < content.size() && content[i] == '=')
+				if (i+1 < content.size() && content[i+1] == '=')
 					str += content[++i];
 			}
 			token_stream.push_back(BasicToken[str]);

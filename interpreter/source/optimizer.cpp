@@ -64,6 +64,21 @@ namespace Mer
 			Mem::Object bxor(const Mem::Object& lhs, const Mem::Object& rhs) {
 				return lhs->operator^(rhs);
 			}
+			Mem::Object slshift(const Mem::Object& lhs, const Mem::Object& rhs) {
+				return lhs->operator<<=(rhs);
+			}
+			Mem::Object srshift(const Mem::Object& lhs, const Mem::Object& rhs) {
+				return lhs->operator>>=(rhs);
+			}
+			Mem::Object sband(const Mem::Object& lhs, const Mem::Object& rhs) {
+				return lhs->operator&=(rhs);
+			}
+			Mem::Object sbor(const Mem::Object& lhs, const Mem::Object& rhs) {
+				return lhs->operator|=(rhs);
+			}
+			Mem::Object sbxor(const Mem::Object& lhs, const Mem::Object& rhs) {
+				return lhs->operator^=(rhs);
+			}
 			Mem::Object not_equal(const Mem::Object& lhs, const Mem::Object& rhs) {
 				return lhs->operator!=(rhs);
 			}
@@ -82,6 +97,10 @@ namespace Mer
 			Mem::Object int_mod(const Mem::Object& lhs, const Mem::Object& rhs)
 			{
 				return std::make_shared<Mem::Int>(*(int*)lhs->get_raw_data() % *(int*)(rhs->get_raw_data()));
+			}
+			Mem::Object sint_mod(const Mem::Object& lhs, const Mem::Object& rhs)
+			{
+				return std::make_shared<Mem::Int>(*(int*)lhs->get_raw_data() %= *(int*)(rhs->get_raw_data()));
 			}
 
 			Mem::Object get_neg(const Mem::Object &v) {
@@ -113,16 +132,51 @@ namespace Mer
 				std::static_pointer_cast<Mem::Int>(v)->get_value()--;
 				return ret;
 			}
+			Mem::Object int_bnot(const Mem::Object& lhs)
+			{
+				return std::make_shared<Mem::Int>(~*(int*)lhs->get_raw_data());
+			}
+			Mem::Object char_front_inc(const Mem::Object& v)
+			{
+				std::static_pointer_cast<Mem::Char>(v)->get_value()++;
+				return v;
+			}
+			Mem::Object char_back_inc(const Mem::Object& v)
+			{
+				auto ret = v->clone();
+				std::static_pointer_cast<Mem::Char>(v)->get_value()++;
+				return ret;
+			}
+			Mem::Object char_front_dec(const Mem::Object& v)
+			{
+				std::static_pointer_cast<Mem::Char>(v)->get_value()--;
+				return v;
+			}
+			Mem::Object char_back_dec(const Mem::Object& v)
+			{
+				auto ret = v->clone();
+				std::static_pointer_cast<Mem::Char>(v)->get_value()--;
+				return ret;
+			}
+			Mem::Object char_bnot(const Mem::Object& lhs)
+			{
+				return std::make_shared<Mem::Char>(~*(char*)lhs->get_raw_data());
+			}
 		}
 		std::map<Mer::Tag, Mem::Object(*) (const Mem::Object&, const Mem::Object&)> op_table{
 			{Mer::PLUS,add},{MINUS,sub},{MUL,mul},{DIV,div},{SMUL,smul},{SDIV,sdiv},{SADD,sadd},
 			{SSUB,ssub},{ASSIGN,assign},{EQ,equal},{NE,not_equal},{GT,gt},{GE,ge},{LT,lt},{LE,le},
-			{MOD,int_mod},{LSHIFT,lshift},{RSHIFT,rshift},{BOR,bor},{BAND,band}
+			{MOD,int_mod},{LSHIFT,lshift},{RSHIFT,rshift},{BOR,bor},{BAND,band},
+			{SLS,slshift},{SRS,srshift},{SBXOR,sbxor},{SBAND,sband},{SBOR,sbor}
 		};
-		std::map<Mer::Tag, Mem::Object(*)(const Mem::Object&)> unary_op_table{
-			{Mer::MINUS,get_neg},{Mer::PLUS,trans},{NOT,get_neg},{INC,int_front_inc},{DEC,int_front_dec},
-			{_BINC,int_back_inc},{_BDEC,int_back_dec}
-		};
+		std::map<std::pair<Mer::Tag, type_code_index>, Mem::Object(*)(const Mem::Object&)> unary_op_table
+		{ 
+			{{Mer::MINUS,Mem::INT},get_neg},{{PLUS,Mem::INT},trans},
+			{{NOT,Mem::BOOL},get_neg},{{INC,Mem::INT},int_front_inc},{{DEC,Mem::INT},int_front_dec},
+			{{_BINC,Mem::INT},int_back_inc},{{_BDEC,Mem::INT},int_back_dec},{{BNOT,Mem::INT},int_bnot},
+			{{INC,Mem::CHAR},char_front_inc},{{DEC,Mem::CHAR},char_front_dec},{{Mer::MINUS,Mem::CHAR},get_neg},
+			{{_BINC,Mem::CHAR},char_back_inc},{{_BDEC,Mem::CHAR},char_back_dec},{{BNOT,Mem::CHAR},char_bnot},
+		} ;
 
 		
 		ParserNode* optimize_bin_op(ParserNode* left, ParserNode* right, Token* tok)
@@ -173,6 +227,21 @@ namespace Mer
 					break;
 				case SMUL:
 					ret = left_v->operator*=(right_v);
+					break;
+				case SBXOR:
+					ret = left_v->operator^=(right_v);
+					break;
+				case SBAND:
+					ret = left_v->operator&=(right_v);
+					break;
+				case SBOR:
+					ret = left_v->operator|=(right_v);
+					break;
+				case SLS:
+					ret = left_v->operator<<=(right_v);
+					break;
+				case SRS:
+					ret = left_v->operator>>=(right_v);
 					break;
 				case ASSIGN:
 					ret = left_v->operator=(right_v);

@@ -23,6 +23,7 @@ namespace Mer
 	void set_cstring();
 	std::map<std::string, void(*)()> repository{
 		{ "vector",Container::using_vector },{ "deque",Container::using_deque },
+		{"math.h",set_maths},
 		{ "set",using_set },{ "map",using_map },{ "stdio.h",set_io },{"string.h",set_cstring}
 	};
 

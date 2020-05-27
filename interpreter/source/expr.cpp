@@ -281,7 +281,7 @@ namespace Mer
 			auto ptr_part = factor();
 			return new RmRef(ptr_part, ptr_part->get_type());
 		}
-		case GET_ADD:
+		case BAND:
 			return new GetAdd();
 		case CAST:
 			return new Cast();
@@ -323,6 +323,7 @@ namespace Mer
 		case INTEGER:
 			token_stream.next();
 			return new LConV(result);
+		case BNOT:
 		case INC:
 		case DEC:
 		case PLUS:
@@ -352,6 +353,8 @@ namespace Mer
 
 	BinOp::BinOp(ParserNode* l, Token* o, ParserNode* r) :left(l), right(r),op_tok(o)
 	{
+		if ((o->get_tag() == MOD || o->get_tag() == SMOD) && l->get_type() != Mem::INT)
+			throw Error("type " + type_to_string(l->get_type()) + " don't support % operation, please convert it to int");
 		auto result = optimizer::op_table.find(o->get_tag());
 		if (result == optimizer::op_table.end())
 			throw Error(o->to_string() + " invalid operation");
@@ -395,7 +398,7 @@ namespace Mer
 
 	UnaryOp::UnaryOp(Tag t, ParserNode * e):expr(e)
 	{
-		auto result = optimizer::unary_op_table.find(t);
+		auto result = optimizer::unary_op_table.find({ t,e->get_type() });
 		if (result == optimizer::unary_op_table.end())
 			throw Error(std::to_string(t) + " invalid operation");
 		if (t == NOT && e->get_type() != Mem::BOOL)
@@ -607,7 +610,7 @@ namespace Mer
 
 	GetAdd::GetAdd()
 	{
-		token_stream.match(GET_ADD);
+		token_stream.match(BAND);
 		id = Expr().root();
 		type = id->get_type();
 	}

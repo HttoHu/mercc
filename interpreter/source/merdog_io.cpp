@@ -346,8 +346,8 @@ namespace Mer
 		Mer::SystemFunction* to_upper = new SystemFunction(Mem::BasicType::STRING, _str_to_upper_case);
 		Mer::SystemFunction* _mer_scanf = new SystemFunction(Mem::BasicType::INT, _scanf);
 		Mer::SystemFunction* cout = new SystemFunction(Mem::BasicType::BVOID, _cout);
-		cout->dnt_check_param();
 		_mer_scanf->dnt_check_param();
+		cout->dnt_check_param();
 		// set string===========================================
 		substr->set_param_types({ Mer::Mem::BasicType::INT, Mer::Mem::BasicType::INT });
 		str_size->set_param_types({ });

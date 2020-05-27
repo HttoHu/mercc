@@ -506,7 +506,7 @@ namespace Mer
 	}
 	Mem::Object Return::execute()
 	{
-		function_ret = expr->execute();
+		mem[0] = expr->execute();
 		*pc = *des;
 		return nullptr;
 	}

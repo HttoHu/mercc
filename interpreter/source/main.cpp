@@ -30,7 +30,7 @@ std::string get_file_content(const std::string& filename)
 	std::string file_content((istreambuf_iterator<char>(ifs)), istreambuf_iterator<char>());
 	return file_content;
 }
-#ifdef _DEBUG
+#ifndef _DEBUG
 int main(int argc, char* argv[])
 {
 	try

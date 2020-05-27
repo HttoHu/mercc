@@ -51,7 +51,7 @@ namespace Mer
 	{
 	public:
 		SingleObjGener(ParserNode* n) :node(n) {}
-		std::vector<Mem::Object> gen_obj()override { return std::vector<Mem::Object>(1,node->execute()); }
+		std::vector<Mem::Object> gen_obj()override;
 		~SingleObjGener() { delete node; }
 	private:
 		ParserNode* node;

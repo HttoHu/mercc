@@ -102,6 +102,11 @@ namespace Mer
 			virtual Object operator&(const Object& v) { throw Error("& :runtime error!"); }
 			virtual Object operator|(const Object& v) { throw Error("|: runtime error!"); }
 			virtual Object operator^(const Object& v) { throw Error("^: runtime error!"); }
+			virtual Object operator<<= (const Object& v) { throw Error("<<=: runtime error!"); }
+			virtual Object operator>>= (const Object& v) { throw Error(">>=: runtime error!"); }
+			virtual Object operator&=(const Object& v) { throw Error("&=:runtime error!"); }
+			virtual Object operator|=(const Object& v) { throw Error("|=: runtime error!"); }
+			virtual Object operator^=(const Object& v) { throw Error("^=: runtime error!"); }
 			virtual Object operator>(const Object & v) { throw Error(">: runtime error"); }
 			virtual Object operator<(const Object & v) { throw Error("<: runtime error"); }
 			virtual Object operator>=(const Object & v) { throw Error(">=: runtime error"); }
@@ -268,6 +273,21 @@ namespace Mer
 			}
 			Object operator^ (const Object& v)override {
 				return std::make_shared<Mem::Int>(value ^ std::static_pointer_cast<Int>(v)->value);
+			}
+			Object operator<<= (const Object& v)override {
+				return std::make_shared<Mem::Int>(value <<= std::static_pointer_cast<Int>(v)->value);
+			}
+			Object operator>>= (const Object& v)override {
+				return std::make_shared<Mem::Int>(value >>= std::static_pointer_cast<Int>(v)->value);
+			}
+			Object operator&= (const Object& v)override {
+				return std::make_shared<Mem::Int>(value &= std::static_pointer_cast<Int>(v)->value);
+			}
+			Object operator|= (const Object& v)override {
+				return std::make_shared<Mem::Int>(value |= std::static_pointer_cast<Int>(v)->value);
+			}
+			Object operator^= (const Object& v)override {
+				return std::make_shared<Mem::Int>(value ^= std::static_pointer_cast<Int>(v)->value);
 			}
 			Object clone()const override
 			{
@@ -594,6 +614,21 @@ namespace Mer
 			Object operator^ (const Object& v)override {
 				return std::make_shared<Mem::Char>(*value ^ std::static_pointer_cast<Char>(v)->get_value());
 			}
+			Object operator<<= (const Object& v)override {
+				return std::make_shared<Mem::Char>(*value <<= std::static_pointer_cast<Char>(v)->get_value());
+			}
+			Object operator>>= (const Object& v)override {
+				return std::make_shared<Mem::Char>(*value >>= std::static_pointer_cast<Char>(v)->get_value());
+			}
+			Object operator&= (const Object& v)override {
+				return std::make_shared<Mem::Char>(*value &= std::static_pointer_cast<Char>(v)->get_value());
+			}
+			Object operator|= (const Object& v)override {
+				return std::make_shared<Mem::Char>(*value |= std::static_pointer_cast<Char>(v)->get_value());
+			}
+			Object operator^= (const Object& v)override {
+				return std::make_shared<Mem::Char>(*value ^= std::static_pointer_cast<Char>(v)->get_value());
+			}
 			Object clone()const override
 			{
 				return std::make_shared<Char>(*value);
@@ -602,7 +637,7 @@ namespace Mer
 			{
 				return std::make_shared<Char>(-*value);
 			}
-			char get_value()
+			char &get_value()
 			{
 				return *value;
 			}

@@ -68,7 +68,7 @@ Mer::SymbolTable::~SymbolTable()
 FunctionBase* Mer::FuncIdRecorder::find(const std::vector<type_code_index>& pf)
 {
 	if (dnt_check)
-		return functions[std::vector<type_code_index>()];
+		return functions.begin()->second;
 	if (functions.find(pf) == functions.end())
 	{
 		for (const auto &it : functions)

@@ -304,7 +304,7 @@ Mer::Function::Function(type_code_index t, Param* p) :
 
 Mer::Function::Function(type_code_index t) :type(t) {}
 
-Mem::Object Mer::Function::run(const std::vector<Mem::Object>& objs)
+void Mer::Function::run(const std::vector<Mem::Object>& objs)
 {
 	mem.new_func(off);
 	size_t arg_count = objs.size();
@@ -315,13 +315,17 @@ Mem::Object Mer::Function::run(const std::vector<Mem::Object>& objs)
 		stmts[*pc]->execute();
 	*pc = tmp;
 	mem.end_func();
-	return nullptr;
 }
 
 Mer::Function::~Function()
 {
 	delete pc;
 	delete param;
+}
+
+void Mer::SystemFunction::run(const std::vector<Mem::Object>& objs)
+{
+	mem[0] = func(objs);
 }
 
 void Mer::SystemFunction::check_param(const std::vector<type_code_index>& types)
