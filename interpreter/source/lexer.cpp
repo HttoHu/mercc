@@ -6,6 +6,8 @@
 using namespace Mer;
 using TokenMap = std::map<std::string, Token*>;
 using TagStrMap = std::map<Tag, std::string>;
+//#define
+std::map<std::string, std::string> define_replace;
 namespace Mer {
 	extern std::map<std::string, void(*)()> repository;
 	namespace num_process {
@@ -106,20 +108,70 @@ namespace Mer {
 				throw LexerError("can not open the file " + name);
 			result->second();
 		}
-
+		void process_define(const std::string& content, size_t& i)
+		{
+			std::string ref_str = retrive_word(content, i);
+			//skip space
+			std::string replace_str;
+			while (content[i] == ' ')i++;
+			while (content[i] != '\n')
+				replace_str += content[i++];
+			define_replace.insert({ ref_str,replace_str });
+		}
+		void process_ifdef(const std::string& content, size_t& i)
+		{
+			std::string ref_str = retrive_word(content, i);
+			if (!define_replace.count(ref_str))
+			{
+				while (i < content.size())
+				{
+					if (content[i] == '\n' || content[i] == '\r')
+						token_stream.push_back(new Endl());
+					else if (content[i] == '#')
+					{
+						i++;
+						std::string ins_name = retrive_word(content, i);
+						if (ins_name == "endif") break;
+					}
+					i++;
+				}
+			}
+		}
+		void process_ifndef(const std::string& content, size_t& i)
+		{
+			std::string ref_str = retrive_word(content, i);
+			if (define_replace.count(ref_str))
+			{
+				while (i < content.size())
+				{
+					if (content[i] == '\n' || content[i] == '\r')
+						token_stream.push_back(new Endl());
+					else if (content[i] == '#')
+					{
+						i++;
+						std::string ins_name = retrive_word(content, i);
+						if (ins_name == "endif") break;
+					}
+					i++;
+				}
+			}
+		}
+		void process_endif(const std::string& content, size_t& i) {}
 		void preprocessor(const std::string& content, size_t& i)
 		{
 			// skip #
 			i++;
 			std::string ins = retrive_word(content, i);
 			std::map<std::string, void(*)(const std::string&, size_t&)> sub_processor_dic{
-				{ "include",process_include }
+				{ "include",process_include },{"define",process_define},{"ifdef",process_ifdef},
+				{"endif",process_endif},{"ifndef",process_ifndef}
 			};
 			auto result = sub_processor_dic.find(ins);
 			if (result == sub_processor_dic.end())
 				throw LexerError("invalid preprocess instruction " + ins);
 			result->second(content, i);
 		}
+
 		extern std::map<std::string, void(*)()> repository;
 	}
 	size_t Endl::current_line = 0;
@@ -283,6 +335,7 @@ Token* Mer::parse_word(const std::string& str, size_t& pos)
 	else
 		return new Id(ret);
 }
+
 Token* Mer::parse_string(const std::string& str, size_t& pos)
 {
 	std::string value;
