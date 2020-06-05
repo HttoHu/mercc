@@ -236,7 +236,7 @@ bool Mer::Param::type_check(const std::vector<type_code_index>& types)
 		auto type_seeker = Mem::type_map.find(types[i]);
 		if (type_seeker == Mem::type_map.end())
 		{
-			throw Error("<inner error>type were no found");
+			throw Error("<inner error>type were not found");
 		}
 		if (!type_seeker->second->convertible(arg_pos[i].second))
 		{

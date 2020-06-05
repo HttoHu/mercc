@@ -35,6 +35,7 @@ namespace Mer
 	extern std::string input_buf;
 	extern std::stringstream my_stringstream;
 	void build_token_stream(const std::string& content);
+	void new_build_token_stream(const std::string& content);
 	//=========================================================================
 	enum Tag
 	{
@@ -309,7 +310,7 @@ namespace Mer
 		char ch;
 	};
 	//=======================================================
-
+	Token* parse_single_token(const std::string& str, size_t& pos);
 	Token* parse_number(const std::string& str, size_t& pos);
 	Token* parse_word(const std::string& str, size_t& pos);
 	Token* parse_string(const std::string& str, size_t& pos);

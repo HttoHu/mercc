@@ -228,7 +228,7 @@ namespace Mer {
 		auto id = token_stream.this_token();
 		auto result = names->sl_table->find(Id::get_value(id));
 		if (result == nullptr)
-			throw Error(id->to_string() + " no found");
+			throw Error(id->to_string() + " not found");
 		switch (result->es)
 		{
 		case ESymbol::SFUN:

@@ -224,7 +224,7 @@ namespace Mer
 	{
 		auto result = mapping.find(member_name);
 		if (result == mapping.end())
-			throw Error("member " + member_name + " no found!");
+			throw Error("member " + member_name + " not found!");
 		auto type_result = STMapping.find(member_name);
 		return { type_result->second,result->second };
 	}
@@ -258,7 +258,7 @@ namespace Mer
 	{
 		auto result = structure_member_table.find(id);
 		if (result == structure_member_table.end())
-			throw Error("member " + id + " no found!");
+			throw Error("member " + id + " not found!");
 		return result->second;
 	}
 	size_t MemberIndex::get_pos()

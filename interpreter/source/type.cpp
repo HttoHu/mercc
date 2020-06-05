@@ -118,7 +118,7 @@ namespace Mer
 			{
 				auto info = Mer::this_namespace->sl_table->find(Id::get_value(tok));
 				if (info == nullptr)
-					throw Error("type: " + Id::get_value(tok) + " no found");
+					throw Error("type: " + Id::get_value(tok) + " not found");
 				if (info->es == ESymbol::SCONTAINER)
 				{
 					token_stream.back();
@@ -155,7 +155,7 @@ namespace Mer
 			{
 				auto info = Mer::this_namespace->sl_table->find(Id::get_value(token_stream.this_token()));
 				if (info == nullptr)
-					throw Error("id: " + Id::get_value(token_stream.this_token()) + "no found");
+					throw Error("id: " + Id::get_value(token_stream.this_token()) + "not found");
 				return info->get_type();
 
 			}

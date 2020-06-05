@@ -181,7 +181,7 @@ namespace Mer
 		{
 			auto result = find(Id::get_value(id));
 			if (result == nullptr)
-				throw Error("id " + id->to_string() + " no found.");
+				throw Error("id " + id->to_string() + " not found.");
 			if (result->es != e)
 				throw Error("id type not matched");
 		}

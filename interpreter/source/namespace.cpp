@@ -70,7 +70,7 @@ Mer::Mem::Object Mer::Namespace::find_var(const std::string& name)
 	if (parent != nullptr)
 		return parent->find_var(name);
 	else
-		throw Error("var " + name + " no found");
+		throw Error("var " + name + " not found");
 }
 
 Mer::Namespace::~Namespace()

@@ -111,7 +111,7 @@ namespace Mer
 		
 		try
 		{
-			Mer::build_token_stream(file_content);
+			Mer::new_build_token_stream(file_content);
 			Parser::program();
 			for (auto& a : pre_stmt)
 			{

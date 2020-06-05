@@ -78,8 +78,10 @@ namespace Mer {
 	}
 	namespace Preprocessor
 	{
+		void preprocessor(const std::string& content, size_t& i);
 		std::string retrive_word(const std::string& str, size_t& pos)
 		{
+			while (str[pos] == ' ')pos++;
 			std::string ret;
 			while (isalnum(str[pos]) || str[pos] == '_') ret += str[pos++];
 			return ret;
@@ -108,33 +110,105 @@ namespace Mer {
 				throw LexerError("can not open the file " + name);
 			result->second();
 		}
+		void process_undefine(const std::string& content, size_t& i)
+		{
+			std::string ref_str = retrive_word(content, i);
+			if (define_replace.count(ref_str))
+				define_replace.erase(ref_str);
+		}
 		void process_define(const std::string& content, size_t& i)
 		{
 			std::string ref_str = retrive_word(content, i);
-			//skip space
 			std::string replace_str;
 			while (content[i] == ' ')i++;
 			while (content[i] != '\n')
 				replace_str += content[i++];
 			define_replace.insert({ ref_str,replace_str });
 		}
+		// return 0 ->  endif , 1 -> else -1 -> error.
+		int ignore_til_endif_else(const std::string& content, size_t& i)
+		{
+			while (i < content.size())
+			{
+				if (content[i] == '\n' || content[i] == '\r')
+					token_stream.push_back(new Endl());
+				else if (content[i] == '#')
+				{
+					size_t back_up_pos = i;
+					i++;
+					std::string ins_name = retrive_word(content, i);
+					if (ins_name == "endif")
+						return 0;
+					else if (ins_name == "else")
+						return 1;
+					else
+					{
+						i = back_up_pos;
+						preprocessor(content, i);
+					}
+				}
+				i++;
+			}
+			return -1;
+		}
+
+		int eat_tok_till_endif_else(const std::string& content, size_t& i)
+		{
+			while (i < content.size())
+			{
+				Token* tok = parse_single_token(content, i);
+				if (tok == nullptr)
+					return -1;
+				token_stream.push_back(tok);
+				i++;
+				if (content[i] == '#')
+				{
+					size_t back_up_pos = i;
+					i++;
+					std::string ins_name = retrive_word(content, i);
+					if (ins_name == "endif")
+						return 0;
+					else if (ins_name == "else")
+						return 1;
+					else
+					{
+						i = back_up_pos;
+						preprocessor(content, i);
+					}
+				}
+			}
+			return -1;
+		}
 		void process_ifdef(const std::string& content, size_t& i)
 		{
 			std::string ref_str = retrive_word(content, i);
 			if (!define_replace.count(ref_str))
 			{
-				while (i < content.size())
+				int state = ignore_til_endif_else(content, i);
+				if (state == 0)
+					return;
+				else if (state == 1)
 				{
-					if (content[i] == '\n' || content[i] == '\r')
-						token_stream.push_back(new Endl());
-					else if (content[i] == '#')
-					{
-						i++;
-						std::string ins_name = retrive_word(content, i);
-						if (ins_name == "endif") break;
-					}
-					i++;
+					int else_state = eat_tok_till_endif_else(content, i);
+					if (else_state != 0)
+						throw LexerError("preprocesser error, maybe you defined too many #else");
+					return;
 				}
+				throw LexerError("you many forget to write #endif");
+			}
+			else
+			{
+				int state = eat_tok_till_endif_else(content, i);
+				if (state == 0)
+					return;
+				else if (state == 1)
+				{
+					int else_state = ignore_til_endif_else(content, i);
+					if (else_state != 0)
+						throw LexerError("preprocesser error, maybe you defined too many #else");
+					return;
+				}
+				throw LexerError("you many forget to write #endif");
 			}
 		}
 		void process_ifndef(const std::string& content, size_t& i)
@@ -142,18 +216,31 @@ namespace Mer {
 			std::string ref_str = retrive_word(content, i);
 			if (define_replace.count(ref_str))
 			{
-				while (i < content.size())
+				int state = ignore_til_endif_else(content, i);
+				if (state == 0)
+					return;
+				else if (state == 1)
 				{
-					if (content[i] == '\n' || content[i] == '\r')
-						token_stream.push_back(new Endl());
-					else if (content[i] == '#')
-					{
-						i++;
-						std::string ins_name = retrive_word(content, i);
-						if (ins_name == "endif") break;
-					}
-					i++;
+					int else_state = eat_tok_till_endif_else(content, i);
+					if (else_state != 0)
+						throw LexerError("preprocesser error, maybe you defined too many #else");
+					return;
 				}
+				throw LexerError("you many forget to write #endif");
+			}
+			else
+			{
+				int state = eat_tok_till_endif_else(content, i);
+				if (state == 0)
+					return;
+				else if (state == 1)
+				{
+					int else_state = ignore_til_endif_else(content, i);
+					if (else_state != 0)
+						throw LexerError("preprocesser error, maybe you defined too many #else");
+					return;
+				}
+				throw LexerError("you many forget to write #endif");
 			}
 		}
 		void process_endif(const std::string& content, size_t& i) {}
@@ -164,7 +251,7 @@ namespace Mer {
 			std::string ins = retrive_word(content, i);
 			std::map<std::string, void(*)(const std::string&, size_t&)> sub_processor_dic{
 				{ "include",process_include },{"define",process_define},{"ifdef",process_ifdef},
-				{"endif",process_endif},{"ifndef",process_ifndef}
+				{"endif",process_endif},{"ifndef",process_ifndef},{"undef",process_undefine}
 			};
 			auto result = sub_processor_dic.find(ins);
 			if (result == sub_processor_dic.end())
@@ -246,6 +333,144 @@ TokenStream Mer::token_stream;
 //get a word from content
 
 
+Token* Mer::parse_single_token(const std::string& content, size_t& i)
+{
+	for (;i < content.size(); i++)
+	{
+		char cur_char = content[i];
+		switch (content[i])
+		{
+		case '\'':
+			return parse_char(content, i);
+		case '\"':
+			return parse_string(content, i);
+		case '\r':
+		case '\n':
+			return new Endl();
+		case '{':
+			if (!is_function_args)
+				Id::id_table().push_front(std::map<std::string, Id*>());
+			else
+				is_function_args = false;
+			return BasicToken[std::string(1, content[i])];
+		case '}':
+			for (auto& a : Id::id_table().front())
+			{
+				token_stream._rem_tok_vec.push_back(a.second);
+			}
+			Id::id_table().pop_front();
+
+			return BasicToken["}"];
+		case '|':
+		case '-':
+		case '+':
+		case '&':
+			if (i + 1 < content.size() && content[i + 1] == cur_char)
+			{
+				auto ret = BasicToken[std::string(2, cur_char)];
+				i++;
+				return ret;
+			}
+			else if (i + 1 < content.size() && content[i + 1] == '=')
+			{
+				i++;
+				return BasicToken[std::string{ cur_char,'=' }];
+			}
+			//->
+			else if (cur_char == '-' && i + 1 < content.size() && content[i + 1] == '>')
+			{
+				i++; 
+				return BasicToken[std::string{ cur_char,'>' }];
+			}
+			else
+				return BasicToken[std::string(1, cur_char)];
+		case '~':
+		case '>':
+		case '<':
+		case '=':
+		case '!':
+		case '*':
+		{
+			std::string str = std::string(1, content[i]);
+			if (i + 1 < content.size() && content[i + 1] == '=')
+			{
+				str += content[++i];
+			}
+			else if (i + 1 < content.size() && (cur_char == '<' || cur_char == '>') && cur_char == content[i + 1])
+			{
+				str += content[++i];
+				if (i + 1 < content.size() && content[i + 1] == '=')
+					str += content[++i];
+			}
+			return BasicToken[str];
+		}
+		case ',':
+		case '%':
+		case '?':
+		case ';':
+		case ':':
+		case '.':
+		case '[':
+		case ']':
+		case '^':
+		case ')':
+			return BasicToken[std::string(1, content[i])];
+		case '\t':
+		case ' ':
+			break;
+		case '(':
+			if (is_function_args)
+				Id::id_table().push_back(std::map<std::string, Id*>());
+			return BasicToken["("];
+		case '/':
+			if (i + 1 < content.size() && content[i + 1] == '/')
+			{
+				while (i + 1 < content.size() && content[i++] != '\n')
+					continue;
+				// in case that the uncorrect of line no
+				i -= 2;
+				break;
+			}
+			else if (i + 1 < content.size() && content[i + 1] == '*')
+			{
+				i += 2;
+				while (i < content.size())
+				{
+					if (content[i] == '\n' || content[i] == '\r')
+					{
+						token_stream.push_back(new Endl());
+					}
+					i++;
+					if (content[i] == '*')
+					{
+						i++;
+						if (i < content.size() && content[i] == '/')
+							break;
+					}
+				}
+				break;
+			}
+			else if (i + 1 < content.size() && content[i + 1] == '=')
+			{
+				token_stream.push_back(BasicToken["/="]);
+				i++;
+				break;
+			}
+			return BasicToken["/"];
+		case '0':case '1':case '2':case '3':case '4':case '5':case '6':
+		case '7':case '8':case '9':
+		{
+			auto ret= parse_number(content, i);
+			i--;
+			return ret;
+		}
+		default:
+			return parse_word(content, i);
+		}
+	}
+	return nullptr;
+}
+
 Token* Mer::parse_number(const std::string& str, size_t& pos)
 {
 	unsigned long long ret = 0;
@@ -295,7 +520,7 @@ Token* Mer::parse_number(const std::string& str, size_t& pos)
 			else
 				return new Literal<double>((double)ret + tmp, Tag::REAL);
 		}
-		throw LexerError("invaild real number");
+		return new Literal<double>((double)ret + tmp, Tag::REAL);
 	}
 	return num_process::integer_to_token(ret, str, pos);
 }
@@ -324,11 +549,26 @@ Token* Mer::parse_word(const std::string& str, size_t& pos)
 			}
 		}
 	}
+	// #define replacement.
+	if (define_replace.count(ret))
+	{
+		auto result = define_replace.find(ret);
+		size_t i = 0;
+		while (i < result->second.size())
+		{
+			token_stream.push_back(parse_single_token(result->second, i));
+			i++;
+		}
+		// to return a token ,if we return nullptr, the lexer will terminated, so we must return the back of the token_stream
+		auto ret_tok = token_stream.content.back();
+		token_stream.pop_back();
+		return ret_tok;
+	}
 	auto result = Mer::BasicToken.find(ret);
-	if (ret == "function")
-		is_function_args = true;
 	if (result != Mer::BasicToken.end())
 		return result->second;
+
+
 	auto id_result = Id::find(ret);
 	if (id_result != nullptr)
 		return id_result;
@@ -509,6 +749,29 @@ void Mer::build_token_stream(const std::string& content) {
 			token_stream.push_back(parse_word(content, i));
 			break;
 		}
+	}
+	token_stream.push_back(END_TOKEN);
+}
+
+void Mer::new_build_token_stream(const std::string& content)
+{
+	token_stream.push_back(new Endl());
+	size_t i = 0;
+	while (i<content.size()) 
+	{
+		if (content[i] == '#')
+		{
+			Preprocessor::preprocessor(content, i);
+			i--;
+		}
+		else
+		{
+			Token* tok = parse_single_token(content, i);
+			if (tok == nullptr)
+				break;
+			token_stream.push_back(tok);
+		}
+		i++;
 	}
 	token_stream.push_back(END_TOKEN);
 }
