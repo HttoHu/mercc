@@ -264,7 +264,7 @@ namespace Mer {
 	size_t Endl::current_line = 0;
 	TagStrMap	TagStr{
 		{ IMPORT,"IMPORT" },{ NAMESPACE,"NAMESPACE" },{ STRUCT,"struct" },{ NEW,"new" },{ PTRVISIT,"PTRVISIT" },
-		{INC,"++"},{DEC,"--"},{QUE,"QUE"},
+		{INC,"++"},{_BINC,"++(back)"},{DEC,"--"},{_BDEC,"--(back)"}, {QUE,"QUE"},
 		{ SHARP,"SHARP" },{ INCLUDE,"INCLUDE" },
 		{ REF,"REF" },{ PROGRAM,"PROGRAME" },{ COMMA,"COMMA" },{ COLON,"COLON" },
 		{ ID,"ID" },{ INTEGER,"INTEGER" },{ REAL,"REAL" } ,{ FUNCTION,"FUNCTION" },{ RETURN,"RETURN" },

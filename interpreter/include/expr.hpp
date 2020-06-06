@@ -71,6 +71,7 @@ namespace Mer
 		Mem::Object execute()override;
 		type_code_index get_type()override;
 		ParserNode* clone()override { return new ContainerIndex(type, pos, expr->clone()); }
+		size_t get_pos()override;
 		~ContainerIndex();
 	private:
 		size_t pos;
@@ -97,7 +98,7 @@ namespace Mer
 	public:
 		SubScript(ParserNode* l, ParserNode* s);
 		SubScript(ParserNode* l, ParserNode* s,type_code_index _ty);
-		type_code_index get_type()override { return type; }
+		type_code_index get_type()override;
 		Mem::Object execute()override;
 		ParserNode* clone()override {
 			return new SubScript(left->clone(), subscr->clone());

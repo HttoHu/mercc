@@ -357,7 +357,7 @@ namespace Mer
 			throw Error("type " + type_to_string(l->get_type()) + " don't support % operation, please convert it to int");
 		auto result = optimizer::op_table.find(o->get_tag());
 		if (result == optimizer::op_table.end())
-			throw Error(o->to_string() + " invalid operation");
+			throw Error(TagStr[o->get_tag()] + " invalid operation");
 		op = result->second;
 		if (o->get_tag() != LSB && l->get_type() != r->get_type())
 		{
@@ -400,7 +400,7 @@ namespace Mer
 	{
 		auto result = optimizer::unary_op_table.find({ t,e->get_type() });
 		if (result == optimizer::unary_op_table.end())
-			throw Error(std::to_string(t) + " invalid operation");
+			throw Error(TagStr[t] + " invalid operation");
 		if (t == NOT && e->get_type() != Mem::BOOL)
 			if (Mem::type_convertible(e->get_type(), Mem::BOOL))
 				expr = new Cast(expr, Mem::BOOL);
@@ -525,13 +525,17 @@ namespace Mer
 
 	Mem::Object ContainerIndex::execute()
 	{
-		auto tmp = expr->execute();
-		return mem[mem.get_current() + pos + std::static_pointer_cast<Mem::Int>(tmp)->get_value()];
+		return mem[get_pos()];
 	}
 
 	type_code_index ContainerIndex::get_type()
 	{
 		return type;
+	}
+
+	size_t ContainerIndex::get_pos()
+	{
+		return mem.get_current() + pos + std::static_pointer_cast<Mem::Int>(expr->execute())->get_value();
 	}
 
 	ContainerIndex::~ContainerIndex()
@@ -653,7 +657,7 @@ namespace Mer
 	{
 		return *(size_t*)id->execute()->get_raw_data();
 	}
-	Mer::Index::Index(ParserNode* l, size_t _index, type_code_index _type) :left(std::move(l)), index(_index), type(_type)
+	Mer::Index::Index(ParserNode* l, size_t _index, type_code_index _type) :left(l), index(_index), type(_type)
 	{
 		if (_type == -1)
 			type = left->get_type();
@@ -678,6 +682,14 @@ namespace Mer
 	}
 	SubScript::SubScript(ParserNode * l, ParserNode * s, type_code_index _ty) :left(l), subscr(s),type(_ty)
 	{
+	}
+	type_code_index SubScript::get_type()
+	{
+		auto ret = left->get_type();
+		// if pointer subscript, the element type is pointer_type -1 
+		if (ret % 2 == 0)
+			ret--;
+		return ret;
 	}
 	Mem::Object SubScript::execute()
 	{

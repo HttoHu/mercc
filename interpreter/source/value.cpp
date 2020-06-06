@@ -467,9 +467,9 @@ namespace Mer {
 	}
 	Mem::Object EvalMultiNode::execute()
 	{
-		for (auto a : exprs)
-			a->execute();
-		return nullptr;
+		for (size_t i=exprs.size()-1;i!=0;i--)
+			exprs[i]->execute();
+		return exprs[0]->execute();
 	}
 	EvalMultiNode::~EvalMultiNode()
 	{
