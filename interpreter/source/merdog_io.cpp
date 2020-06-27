@@ -45,6 +45,7 @@
 #ifdef USING_CXX17
 #include <filesystem>
 #endif
+extern std::string pre_input_content;
 namespace Mer
 {
 
@@ -221,6 +222,12 @@ namespace Mer
 			std::string content = args[0]->to_string();
 			int cnt = 1;
 			int i = 0;
+			if (!pre_input_content.size())
+			{
+				std::string tmp_str;
+				std::cin >> tmp_str;
+				my_stringstream.str(tmp_str);
+			}
 			try
 			{
 				while (i < content.size())
@@ -237,28 +244,28 @@ namespace Mer
 						case 'd':
 						{
 							i++;
-							int tmp; std::cin >> tmp;
+							int tmp; my_stringstream >> tmp;
 							std::static_pointer_cast<Mem::Pointer>(args[cnt++])->rm_ref()->operator=(_make_int_obj(tmp));
 							continue;
 						}
 						case 'f':
 						{
 							i++;
-							double tmp; std::cin >> tmp;
+							double tmp; my_stringstream >> tmp;
 							std::static_pointer_cast<Mem::Pointer>(args[cnt++])->rm_ref()->operator=(std::make_shared<Mem::Double>(tmp));
 							continue;
 						}
 						case 'c':
 						{
 							i++;
-							char tmp; std::cin >> tmp;
+							char tmp; my_stringstream >> tmp;
 							std::static_pointer_cast<Mem::Pointer>(args[cnt++])->rm_ref()->operator=(std::make_shared<Mem::Char>(tmp));
 							continue;
 						}
 						case 's':
 						{
 							i++;
-							std::string tmp; std::cin >> tmp;
+							std::string tmp; my_stringstream >> tmp;
 							size_t pos = std::static_pointer_cast<Mem::Pointer>(args[cnt++])->get_value();
 							for (auto a : tmp)
 								mem[pos++] = std::make_shared<Mem::Char>(a);
@@ -291,7 +298,7 @@ namespace Mer
 		Mem::Object _input_char(const std::vector<Mem::Object>& args)
 		{
 			char obj;
-			if (input_buf.empty())
+			if (pre_input_content.empty())
 				std::cin >> std::noskipws>>obj;
 			else
 				my_stringstream >>std::noskipws>> obj;
@@ -308,7 +315,10 @@ namespace Mer
 		{
 			size_t dest_pos = std::static_pointer_cast<Mem::Pointer>(args[0])->get_value();
 			std::string str;
-			std::getline(std::cin, str);
+			if (!pre_input_content.size())
+				std::getline(std::cin, str);
+			else
+				std::getline(my_stringstream, str);
 			for (auto a : str)
 			{
 				*(Mer::mem[dest_pos++]->get_raw_data()) = a;
@@ -324,10 +334,10 @@ namespace Mer
 				char cur = *mem[dest_pos]->get_raw_data();
 				if (cur == '\0')
 				{
-					putchar('\n');
+					print_str('\n');
 					break;
 				}
-				putchar(cur);
+				print_str(cur);
 				dest_pos++;
 			}
 			return std::make_shared<Mem::Int>(1);

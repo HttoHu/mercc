@@ -6,6 +6,8 @@
 using namespace Mer;
 using TokenMap = std::map<std::string, Token*>;
 using TagStrMap = std::map<Tag, std::string>;
+
+std::string pre_input_content;
 //#define
 std::map<std::string, std::string> define_replace;
 namespace Mer {
@@ -94,6 +96,7 @@ namespace Mer {
 				if (str[j] != content[i++])
 					throw LexerError("lexer error");
 		}
+
 		void process_include(const std::string& content, size_t& i)
 		{
 			match_str(content, i, "<");
@@ -179,6 +182,33 @@ namespace Mer {
 			}
 			return -1;
 		}
+
+		void process_preinput(const std::string& content, size_t& i)
+		{
+			while (content[i] == ' ')i++;
+			if (content[i] == '\n') i++;
+			std::string pre_ins;
+			while (i < content.size())
+			{
+				if (content[i] == '#')
+				{
+					i++;
+					pre_ins = retrive_word(content, i);
+					if (pre_ins == "end_pre_input")
+						break;
+					else
+					{
+						pre_input_content += "#" + pre_ins;
+						pre_ins.clear();
+					}
+				}
+				else
+					pre_input_content += content[i++];
+			}
+			if(pre_ins!="end_pre_input")
+				throw LexerError("expect #end_pre_input");
+			Mer::my_stringstream.str(pre_input_content);
+		}
 		void process_ifdef(const std::string& content, size_t& i)
 		{
 			std::string ref_str = retrive_word(content, i);
@@ -251,7 +281,7 @@ namespace Mer {
 			std::string ins = retrive_word(content, i);
 			std::map<std::string, void(*)(const std::string&, size_t&)> sub_processor_dic{
 				{ "include",process_include },{"define",process_define},{"ifdef",process_ifdef},
-				{"endif",process_endif},{"ifndef",process_ifndef},{"undef",process_undefine}
+				{"endif",process_endif},{"ifndef",process_ifndef},{"undef",process_undefine},{"pre_input",process_preinput}
 			};
 			auto result = sub_processor_dic.find(ins);
 			if (result == sub_processor_dic.end())

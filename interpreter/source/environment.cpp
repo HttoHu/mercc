@@ -33,7 +33,6 @@ namespace Mer
 	std::vector<std::pair<PosPtr, PosPtr>> _nearest_loop_pos;
 	std::vector<Mer::ParserNode*> structure_parent_stack;
 
-	std::string input_buf = "";
 	std::stringstream my_stringstream;
 	extern std::map<type_code_index, std::map<std::string, FunctionBase*>> member_function_table;
 	extern std::map<std::string, UStructure*> ustructure_map;
@@ -86,7 +85,6 @@ namespace Mer
 			ustructure_map.clear();
 			// pre_input clear
 			my_stringstream.clear();
-			my_stringstream.str(input_buf);
 		}
 		void _merdog_init_()
 		{

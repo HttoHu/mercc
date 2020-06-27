@@ -32,7 +32,6 @@
 #include "error.hpp"
 namespace Mer
 {
-	extern std::string input_buf;
 	extern std::stringstream my_stringstream;
 	void build_token_stream(const std::string& content);
 	void new_build_token_stream(const std::string& content);
