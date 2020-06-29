@@ -568,14 +568,12 @@ namespace Mer
 
 	size_t ContainerGloIndex::get_pos()
 	{
-		size_t off_set = Mem::get_raw<int>(expr->execute());
-		return off_set + pos;
+		return Mem::get_raw<int>(expr->execute()) + pos;
 	}
 
 	Mem::Object ContainerGloIndex::execute()
 	{
-		auto tmp = expr->execute();
-		return mem[pos + std::static_pointer_cast<Mem::Int>(tmp)->get_value()];
+		return mem[get_pos()];
 	}
 
 	NewExpr::NewExpr(bool init_nothing)

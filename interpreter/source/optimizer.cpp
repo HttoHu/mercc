@@ -318,24 +318,30 @@ namespace Mer
 		}
 		ParserNode* optimize_array_subscript(ParserNode* arr, ParserNode* subscript,type_code_index default_type)
 		{
+			ParserNode* ret;
 			type_code_index type=default_type?default_type:arr->get_type();
-			if (typeid(*arr) == typeid(Variable) && static_cast<Variable*>(arr)->arr())
+			if ((typeid(*arr)==typeid(GVar)||typeid(*arr) == typeid(Variable)) && static_cast<Variable*>(arr)->arr())
 			{
 				int index = 0;
 				if (typeid(*subscript) == typeid(LConV))
 				{
 					auto v = static_cast<LConV*>(subscript);
-					// skip arr info
+					// skip subscript 
 					index = Mem::get_raw<int>(v->execute());
-					// get element type;
-					auto ret = new Variable(type, arr->get_pos() + index);
+					if (typeid(*arr) == typeid(GVar))
+						ret = new GVar(type, arr->get_pos() + index);
+					else
+						ret = new Variable(type, arr->get_pos() + index);
 					delete arr;
 					delete subscript;
 					return ret;
 				}
 				else
 				{
-					auto ret = new ContainerIndex(type, arr->get_pos(), subscript);
+					if (typeid(*arr) == typeid(GVar))
+						ret = new ContainerGloIndex(arr->get_pos(),type, subscript);
+					else
+						ret = new ContainerIndex(type, arr->get_pos(), subscript);
 					delete arr;
 					return ret;
 				}
