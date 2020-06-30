@@ -222,12 +222,7 @@ namespace Mer
 			std::string content = args[0]->to_string();
 			int cnt = 1;
 			int i = 0;
-			if (!pre_input_content.size())
-			{
-				std::string tmp_str;
-				std::cin >> tmp_str;
-				my_stringstream.str(tmp_str);
-			}
+			std::istream& is= pre_input_content.size()? my_stringstream: std::cin;
 			try
 			{
 				while (i < content.size())
@@ -244,28 +239,29 @@ namespace Mer
 						case 'd':
 						{
 							i++;
-							int tmp; my_stringstream >> tmp;
+							int tmp; 
+							is >> tmp;
 							std::static_pointer_cast<Mem::Pointer>(args[cnt++])->rm_ref()->operator=(_make_int_obj(tmp));
 							continue;
 						}
 						case 'f':
 						{
 							i++;
-							double tmp; my_stringstream >> tmp;
+							double tmp; is >> tmp;
 							std::static_pointer_cast<Mem::Pointer>(args[cnt++])->rm_ref()->operator=(std::make_shared<Mem::Double>(tmp));
 							continue;
 						}
 						case 'c':
 						{
 							i++;
-							char tmp; my_stringstream >> tmp;
+							char tmp; is >> tmp;
 							std::static_pointer_cast<Mem::Pointer>(args[cnt++])->rm_ref()->operator=(std::make_shared<Mem::Char>(tmp));
 							continue;
 						}
 						case 's':
 						{
 							i++;
-							std::string tmp; my_stringstream >> tmp;
+							std::string tmp; is >> tmp;
 							size_t pos = std::static_pointer_cast<Mem::Pointer>(args[cnt++])->get_value();
 							for (auto a : tmp)
 								mem[pos++] = std::make_shared<Mem::Char>(a);

@@ -94,9 +94,8 @@ namespace Mer
 
 	Mem::Object Mem::Int::operator=(const Object & v)
 	{
-		auto tmp = v;
-		value = std::static_pointer_cast<Int>(v)->value;
-		return tmp;
+		value = std::static_pointer_cast<Mem::Int>(v)->get_value();
+		return v;
 	}
 
 	Mem::Object  Mem::Int::Convert(type_code_index type)
