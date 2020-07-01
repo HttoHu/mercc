@@ -1,10 +1,10 @@
 /*
-GNU GENERAL PUBLIC LICENSE
-					   Version 3, 29 June 2007
+	 GNU GENERAL PUBLIC LICENSE
+						   Version 3, 29 June 2007
 
- Copyright (C) 2007 Free Software Foundation, Inc. <https://fsf.org/>
- Everyone is permitted to copy and distribute verbatim copies
- of this license document, but changing it is not allowed.
+	 Copyright (C) 2007 Free Software Foundation, Inc. <https://fsf.org/>
+	 Everyone is permitted to copy and distribute verbatim copies
+	 of this license document, but changing it is not allowed.
 */
 #include <string>
 #include <iostream>
@@ -21,6 +21,9 @@ GNU GENERAL PUBLIC LICENSE
 #include "../include/compound_box.hpp"
 
 
+int err_line = 0;
+std::string err_msg;
+extern std::string pre_input_content;
 
 namespace Mer
 {
@@ -37,6 +40,7 @@ namespace Mer
 	std::vector<std::pair<PosPtr, PosPtr>> _nearest_loop_pos;
 	std::vector<Mer::ParserNode*> structure_parent_stack;
 
+	std::string input_buf = "";
 	std::stringstream my_stringstream;
 	extern std::map<type_code_index, std::map<std::string, FunctionBase*>> member_function_table;
 	extern std::map<std::string, UStructure*> ustructure_map;
@@ -82,13 +86,15 @@ namespace Mer
 				}
 			}
 			member_function_table.clear();
-			for (auto &a : ustructure_map)
+			for (auto& a : ustructure_map)
 			{
 				delete a.second;
 			}
 			ustructure_map.clear();
 			// pre_input clear
 			my_stringstream.clear();
+			my_stringstream.str(pre_input_content);
+			pre_input_content.clear();
 		}
 		void _merdog_init_()
 		{
@@ -108,9 +114,10 @@ namespace Mer
 	std::string run_interpreter(const std::string& file_content)
 	{
 		output_buff = "";
+		err_msg = "";
 
 		_merdog_init_();
-		
+
 		try
 		{
 			Mer::new_build_token_stream(file_content);
@@ -121,18 +128,18 @@ namespace Mer
 			}
 			clear();
 		}
-		catch (const std::exception & e)
+		catch (const std::exception& e)
 		{
 			auto ret = e.what();
 			token_stream.clear();
 			clear();
 			return ret;
 		}
-		catch (Mer::Error & e)
+		catch (Mer::Error& e)
 		{
 			auto ret = e.what();
-			std::cout << ret;
-
+			err_line = get_line_no();
+			err_msg = e.what();
 			token_stream.clear();
 			clear();
 			return ret;
