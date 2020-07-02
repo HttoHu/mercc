@@ -85,7 +85,7 @@ namespace Mer {
 			tmp.insert(tmp.end(), tmp_vec.begin(), tmp_vec.end());
 		}
 		func->run(tmp);
-		return nullptr;
+		return mem[0];
 	}
 
 	std::string FunctionCall::to_string()
@@ -315,8 +315,7 @@ namespace Mer {
 		{
 			throw Error("function " + func_name + param_feature_to_string(pf) + " not found its defination");
 		}
-		current_ins_table->push_back(std::make_unique <FunctionCall>(func, std::move(exprs)));
-		return new GVar(func->get_type(), 0);
+		return new FunctionCall(func, std::move(exprs));
 	}
 
 	MemberFunctionCall* Parser::parse_call_by_function(FunctionBase* f)
@@ -515,7 +514,9 @@ namespace Mer {
 		else if (typeid(*node) == typeid(EmptyList))
 			return new MultiObjGener(std::move(static_cast<EmptyList*>(node)->exprs()));
 		else if (is_a_structure_type(node->get_type()))
+		{
 			return new StructObjGener(node->get_type(), node);
+		}
 		else
 			return new SingleObjGener(node);
 	}

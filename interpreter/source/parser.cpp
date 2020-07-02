@@ -657,7 +657,7 @@ namespace Mer
 			else
 			{
 				// to copy a struct to init a struct var.
-				writers.push_back(UptrPNode(new StructWriter(type, c_pos, a->get_expr())));
+				writers.push_back(UptrPNode(new GStructWriter(type, c_pos, a->get_expr())));
 				sum--;
 				return;
 			}

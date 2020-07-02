@@ -22,7 +22,6 @@ namespace Mer
 	// the impl of the member variable of structure parser.
 	void _structure_member_def(type_code_index var_type, std::vector<Mem::Object> & init, UStructure * structure_content) {
 		std::vector<Mer::VarDeclUnit> member_units;
-
 		while (true)
 		{
 			member_units.push_back(VarDeclUnit(var_type));
@@ -272,6 +271,7 @@ namespace Mer
 	}
 	Mem::Object MemberIndex::execute()
 	{
+		parent->execute();
 		return Mer::mem[get_pos()];
 	}
 	StructWriter::StructWriter(size_t ty, size_t _pos, ParserNode* p) :type(ty), pos(_pos), rhs(p) 
@@ -281,6 +281,7 @@ namespace Mer
 	}
 	Mem::Object StructWriter::execute()
 	{
+		rhs->execute();
 		size_t rhs_pos = rhs->get_pos();
 		for (int i = 0; i < len; i++)
 		{
@@ -296,7 +297,9 @@ namespace Mer
 
 	Mem::Object GStructWriter::execute()
 	{
+		rhs->execute();
 		size_t rhs_pos = rhs->get_pos();
+		std::cout << pos;
 		for (int i = 0; i < len; i++)
 		{
 			mem[pos + i] = mem[rhs_pos + i]->clone();

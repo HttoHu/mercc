@@ -500,6 +500,7 @@ namespace Mer
 					ParserNode* holder = new Variable(ty, pos + i);
 					objs_vec.push_back(new TmpVar(ty,i,holder));
 				}
+				
 				expr = new EvalMultiNode(std::move(objs_vec));
 				return;
 			}
@@ -510,6 +511,7 @@ namespace Mer
 	}
 	Mem::Object Return::execute()
 	{
+		// expr is EvalMultiNode or Single Node , and it returns the first elements the other elements will be push to mem[1] to mem[n-1]
 		mem[0] = expr->execute();
 		*pc = *des;
 		return nullptr;

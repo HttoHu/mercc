@@ -144,6 +144,7 @@ namespace Mer
 	public:
 		FunctionCall(FunctionBase * fun, std::vector<ParserNode*>&& exprs);
 		type_code_index get_type()override;
+		bool global()const override { return true; }
 		Mem::Object execute()override;
 		std::string to_string()override;
 		size_t get_pos()override { return 0; }
