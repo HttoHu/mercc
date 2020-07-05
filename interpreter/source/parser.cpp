@@ -198,7 +198,7 @@ namespace Mer
 				build_ustructure();
 				break;
 			case ENDOF:
-				mem.get_current() = mem.get_capacity() - 100;
+				mem.get_current() = mem.get_capacity() - 200;
 				return;
 			default:
 				auto stmt = Parser::statement();

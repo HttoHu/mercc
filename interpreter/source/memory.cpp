@@ -62,7 +62,7 @@ namespace Mer
 	}
 	void Memory::reset()
 	{
-		glo_var_index = 0;
+		glo_var_index = 200;
 		current = 0;
 		index = 0;
 	}

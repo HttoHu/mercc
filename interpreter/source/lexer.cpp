@@ -190,7 +190,7 @@ namespace Mer {
 		void process_preinput(const std::string& content, size_t& i)
 		{
 			while (content[i] == ' ')i++;
-			if (content[i] == '\n') i++;
+			if (content[i] == '\n' || content[i] == '\r') i++;
 			std::string pre_ins;
 			while (i < content.size())
 			{

@@ -68,7 +68,6 @@ namespace Mer
 			Mer::rem_functions.clear();
 			Mer::pre_stmt.clear();
 			mem.reset();
-
 			Mem::_clear_type_info();
 
 			compare_map.clear();
@@ -93,8 +92,7 @@ namespace Mer
 			ustructure_map.clear();
 			// pre_input clear
 			my_stringstream.clear();
-			my_stringstream.str(pre_input_content);
-			pre_input_content.clear();
+			pre_input_content = "";
 		}
 		void _merdog_init_()
 		{
